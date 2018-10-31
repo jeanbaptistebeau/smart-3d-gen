@@ -4,9 +4,8 @@ import { scene } from "../3d/SceneHelper.js";
 
 const OrbitControls = require("three-orbit-controls")(THREE);
 
-class SceneComponent extends Component {
+class StaticSceneComponent extends Component {
   sceneBuilted = false;
-  meshes = [];
 
   render() {
     return (
@@ -36,15 +35,11 @@ class SceneComponent extends Component {
   }
 
   buildScene() {
-    const { size, boxSize } = this.props;
+    const { size, matrix } = this.props;
 
     // Scene
     this.scene = new THREE.Scene();
-    scene.init(
-      size.width * boxSize,
-      size.height * boxSize,
-      size.depth * boxSize
-    );
+    scene.init(size.width, size.height, size.depth);
 
     // Camera
     const cPos = scene.cameraPosition;
@@ -61,17 +56,9 @@ class SceneComponent extends Component {
 
     // Light
     const light = new THREE.SpotLight(0xfffae8, 0.5);
-    // light.target = ground;
-    // light.shadow.mapSize.width = 1024;
-    // light.shadow.mapSize.height = 1024;
-    // light.angle = 0.8;
-    // light.shadowBias = 0.001;
     const lPos = scene.lightPosition;
     light.position.set(lPos.x, lPos.y, lPos.z);
     this.scene.add(light);
-
-    // const lightHelper = new THREE.SpotLightHelper(light);
-    // this.scene.add(lightHelper);
 
     var amb = new THREE.AmbientLight(0xffffff, 0.7);
     this.scene.add(amb);
@@ -83,14 +70,11 @@ class SceneComponent extends Component {
     const ground = scene.ground();
     this.scene.add(ground);
 
-    // Meshes
-    this.meshes = Array(size.width);
+    // Voxels
     for (var x = 0; x < size.width; x++) {
-      this.meshes[x] = Array(size.height);
       for (var y = 0; y < size.height; y++) {
-        this.meshes[x][y] = Array(size.depth);
         for (var z = 0; z < size.depth; z++) {
-          this.meshes[x][y][z] = [];
+          this.addVoxelMesh(x, y, z, matrix[x][y][z]);
         }
       }
     }
@@ -103,67 +87,26 @@ class SceneComponent extends Component {
       this.buildScene();
     }
 
-    this.updateScene();
     this.renderScene();
-  }
-
-  updateScene() {
-    const { boxesToUpdate } = this.props;
-
-    // Remove old voxels
-    // this.voxelsInScene.forEach(function(item, index, array) {
-    //   this.scene.remove(item);
-    // }, this);
-    // this.voxelsInScene = [];
-
-    // Updates boxes
-    for (var i = 0; i < boxesToUpdate.length; i++) {
-      const box = boxesToUpdate[i];
-      const { x, y, z } = box.position;
-
-      // Remove previous meshes at the box position
-      const previousMeshes = this.meshes[x][y][z];
-      this.scene.remove(...previousMeshes);
-
-      // Add new meshes
-      const newMeshes = this.boxMeshes(box);
-      this.meshes[x][y][z] = newMeshes;
-      if (newMeshes.length > 0) this.scene.add(...newMeshes);
-    }
-  }
-
-  boxMeshes(box) {
-    var origin = {
-      x: box.position.x * this.props.boxSize,
-      y: box.position.y * this.props.boxSize,
-      z: box.position.z * this.props.boxSize
-    };
-
-    if (box.voxels === null) {
-      return [scene.undefinedMesh(origin, this.props.boxSize, box.uncertainty)];
-    } else {
-      return scene.voxelMeshes(box.voxels, origin);
-    }
   }
 
   renderScene() {
     this.renderer.render(this.scene, this.camera);
   }
 
-  // voxelMesh(v) {
-  //   // If value is null, don't draw it (represents air)
-  //   if (v.value === null) return;
-  //
-  //   const voxel = scene.voxel(v.x, v.y, v.z, v.value);
-  //
-  //   // Add the mesh to the scene
-  //   this.scene.add(voxel);
-  //   this.voxelsInScene.push(voxel);
-  // }
+  addVoxelMesh(x, y, z, value) {
+    // If value is -1, don't draw it (represents air)
+    if (value === -1) return;
+
+    const voxel = scene.voxelMesh(x, y, z, value);
+
+    // Add the mesh to the scene
+    this.scene.add(voxel);
+  }
 
   componentWillUnmount() {
     this.mount.removeChild(this.renderer.domElement);
   }
 }
 
-export default SceneComponent;
+export default StaticSceneComponent;

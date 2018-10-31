@@ -79,7 +79,9 @@ export var scene = {
     const realSize = size * 0.5 * UNIT;
     const geometry = new THREE.BoxGeometry(realSize, realSize, realSize);
 
-    var material = new THREE.MeshLambertMaterial({ color: 0x000000 });
+    const color = uncertainty === 1 ? 0x000000 : 0xff9505;
+
+    var material = new THREE.MeshLambertMaterial({ color: color });
     material.transparent = true;
     material.opacity = 0.2 + (1 - uncertainty) * 0.6;
 
