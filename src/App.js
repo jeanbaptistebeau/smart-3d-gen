@@ -3,7 +3,6 @@ import SceneComponent from "./components/SceneComponent";
 import ToolbarComponent from "./components/ToolbarComponent";
 import "./App.css";
 
-import { VoxelMatrix } from "./model/matrix.js";
 import worker from "./model/wfc.worker.js";
 import WebWorker from "./model/WebWorker";
 
@@ -23,16 +22,16 @@ class App extends Component {
 
     this.handleMessage = this.handleMessage.bind(this);
 
-    const srcSize = 20;
+    const srcSize = 18;
     const brown = 0x88665d;
     const green = 0xc2b97f;
 
     var src = Array(srcSize);
-    for (var x = 0; x < srcSize; x++) {
+    for (let x = 0; x < srcSize; x++) {
       src[x] = Array(srcSize);
-      for (var y = 0; y < srcSize; y++) {
+      for (let y = 0; y < srcSize; y++) {
         src[x][y] = Array(srcSize);
-        for (var z = 0; z < srcSize; z++) {
+        for (let z = 0; z < srcSize; z++) {
           src[x][y][z] = -1;
         }
       }
@@ -80,30 +79,30 @@ class App extends Component {
     // src[1][1][2] = 0x700548;
     // src[1][1][3] = 0x700548;
 
-    for (var x = 6; x < 12; x++) {
-      for (var y = 0; y < 6; y++) {
-        for (var z = 6; z < 12; z++) {
+    for (let x = 6; x < 12; x++) {
+      for (let y = 0; y < 6; y++) {
+        for (let z = 6; z < 12; z++) {
           src[x][y][z] = 0x700548;
         }
       }
     }
 
-    for (var x = 6; x < 12; x++) {
-      for (var y = 6; y < 10; y++) {
-        for (var z = 6; z < 12; z++) {
+    for (let x = 6; x < 12; x++) {
+      for (let y = 6; y < 10; y++) {
+        for (let z = 6; z < 12; z++) {
           src[x][y][z] = 0x362023;
         }
       }
     }
 
-    for (var x = 6; x < 12; x++) {
-      for (var z = 6; z < 12; z++) {
+    for (let x = 6; x < 12; x++) {
+      for (let z = 6; z < 12; z++) {
         src[x][10][z] = 0xaaaaaa;
       }
     }
 
-    for (var x = 7; x < 11; x++) {
-      for (var z = 7; z < 11; z++) {
+    for (let x = 7; x < 11; x++) {
+      for (let z = 7; z < 11; z++) {
         src[x][10][z] = -1;
       }
     }
@@ -133,7 +132,7 @@ class App extends Component {
     // Start worker
     const wfcWorker = new WebWorker(worker);
     wfcWorker.onmessage = this.handleMessage;
-    wfcWorker.postMessage(message.start(2, src, srcSize));
+    wfcWorker.postMessage(message.start(3, src, srcSize));
   }
 
   // Handles messages received from web worker
@@ -179,9 +178,9 @@ class App extends Component {
   initialBoxes(w, h, d, size) {
     var boxes = [];
 
-    for (var x = 0; x < w; x++) {
-      for (var y = 0; y < h; y++) {
-        for (var z = 0; z < d; z++) {
+    for (let x = 0; x < w; x++) {
+      for (let y = 0; y < h; y++) {
+        for (let z = 0; z < d; z++) {
           boxes.push({
             position: { x: x, y: y, z: z },
             voxels: null,
