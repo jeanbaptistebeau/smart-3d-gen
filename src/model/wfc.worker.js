@@ -25,7 +25,7 @@ export default () => {
   };
 
   /// Start function
-  function start({ _N, src, srcSize }) {
+  function start({ _N, src }) {
     N = _N;
 
     console.log("Initializing...");
@@ -38,7 +38,7 @@ export default () => {
     this.postMessage(message.init(sizeFactor, sizeFactor, sizeFactor, N));
 
     // Creates patterns from source
-    patterns = createPatterns(src, srcSize);
+    patterns = createPatterns(src);
 
     // Creates relations from patterns
     relations = createRelations();
@@ -273,14 +273,14 @@ export default () => {
   // WFC Initialization
 
   /// Creates all the N-patterns from the source
-  function createPatterns(src, srcSize) {
+  function createPatterns(src) {
     var patterns = {};
     var counter = 0;
 
     // Initialize all patterns
-    for (let x = 0; x <= srcSize - N; x++) {
-      for (let y = 0; y <= srcSize - N; y++) {
-        for (let z = 0; z <= srcSize - N; z++) {
+    for (let x = 0; x <= src.length - N; x++) {
+      for (let y = 0; y <= src[x].length - N; y++) {
+        for (let z = 0; z <= src[x][y].length - N; z++) {
           patterns[counter] = {
             offset: { x: x, y: y, z: z },
             grid: emptyGrid()
@@ -292,9 +292,9 @@ export default () => {
     }
 
     // Set values of patterns
-    for (let x = 0; x < srcSize; x++) {
-      for (let y = 0; y < srcSize; y++) {
-        for (let z = 0; z < srcSize; z++) {
+    for (let x = 0; x < src.length; x++) {
+      for (let y = 0; y < src[x].length; y++) {
+        for (let z = 0; z < src[x][y].length; z++) {
           for (let id in patterns) {
             const offset = patterns[id].offset;
             setPatternValue(

@@ -13,8 +13,8 @@ class App extends Component {
 
     boxesToUpdate: [],
 
-    srcSize: null,
-    srcMatrix: null
+    srcMatrix: null,
+    wfcWorker: null
   };
 
   constructor() {
@@ -22,9 +22,10 @@ class App extends Component {
 
     this.handleMessage = this.handleMessage.bind(this);
 
-    const srcSize = 18;
     const brown = 0x88665d;
     const green = 0xc2b97f;
+
+    const srcSize = 18;
 
     var src = Array(srcSize);
     for (let x = 0; x < srcSize; x++) {
@@ -123,16 +124,10 @@ class App extends Component {
     // src[4][4][2] = green;
 
     this.state.srcMatrix = src;
-    this.state.srcSize = {
-      width: srcSize,
-      height: srcSize,
-      depth: srcSize
-    };
 
-    // Start worker
-    const wfcWorker = new WebWorker(worker);
-    wfcWorker.onmessage = this.handleMessage;
-    wfcWorker.postMessage(message.start(3, src, srcSize));
+    // Setup worker
+    this.state.wfcWorker = new WebWorker(worker);
+    this.state.wfcWorker.onmessage = this.handleMessage;
   }
 
   // Handles messages received from web worker
@@ -169,8 +164,8 @@ class App extends Component {
   render() {
     return (
       <div className="App">
-        <SceneComponent className="Scene" {...this.state} />
         <ToolbarComponent className="Toolbar" {...this.state} />
+        <SceneComponent className="Scene" {...this.state} />
       </div>
     );
   }
@@ -193,15 +188,5 @@ class App extends Component {
     return boxes;
   }
 }
-
-// ####################################################
-// Messages: APP -> WORKER
-
-var message = {
-  start: (N, src, srcSize) => ({
-    type: "start",
-    body: { _N: N, src: src, srcSize: srcSize }
-  })
-};
 
 export default App;

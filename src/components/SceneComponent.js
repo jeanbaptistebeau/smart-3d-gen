@@ -27,7 +27,7 @@ class SceneComponent extends Component {
 
     // Renderer
     this.renderer = new THREE.WebGLRenderer({ antialias: false });
-    this.renderer.setClearColor("#FFF");
+    this.renderer.setClearColor("#F8F9FF");
     this.renderer.setSize(width, height);
     this.mount.appendChild(this.renderer.domElement);
 
@@ -56,7 +56,7 @@ class SceneComponent extends Component {
     this.controls.addEventListener("change", this.renderScene);
     this.controls.target = scene.center;
     this.controls.minDistance = 10;
-    this.controls.maxDistance = 50;
+    this.controls.maxDistance = 100;
     this.controls.maxPolarAngle = Math.PI / 2;
 
     // Light

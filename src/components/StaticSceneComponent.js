@@ -26,7 +26,7 @@ class StaticSceneComponent extends Component {
 
     // Renderer
     this.renderer = new THREE.WebGLRenderer({ antialias: false });
-    this.renderer.setClearColor("#FFF");
+    this.renderer.setClearColor("#1A1B25");
     this.renderer.setSize(width, height);
     this.mount.appendChild(this.renderer.domElement);
 
@@ -35,11 +35,11 @@ class StaticSceneComponent extends Component {
   }
 
   buildScene() {
-    const { size, matrix } = this.props;
+    const { matrix } = this.props;
 
     // Scene
     this.scene = new THREE.Scene();
-    scene.init(size.width, size.height, size.depth);
+    scene.init(matrix.length, matrix[0].length, matrix[0][0].length);
 
     // Camera
     const cPos = scene.cameraPosition;
@@ -64,16 +64,16 @@ class StaticSceneComponent extends Component {
     this.scene.add(amb);
 
     // Wireframe
-    this.scene.add(scene.wireframe());
+    // this.scene.add(scene.wireframe());
 
     // Ground
     const ground = scene.ground();
     this.scene.add(ground);
 
     // Voxels
-    for (var x = 0; x < size.width; x++) {
-      for (var y = 0; y < size.height; y++) {
-        for (var z = 0; z < size.depth; z++) {
+    for (var x = 0; x < matrix.length; x++) {
+      for (var y = 0; y < matrix[x].length; y++) {
+        for (var z = 0; z < matrix[x][y].length; z++) {
           this.addVoxelMesh(x, y, z, matrix[x][y][z]);
         }
       }
