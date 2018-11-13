@@ -38,73 +38,61 @@ class App extends Component {
       }
     }
 
-    // src[1][0][1] = brown;
-    // src[2][0][1] = brown;
-    // src[2][0][2] = brown;
-    // src[3][0][2] = brown;
+    // for (let x = 6; x < 12; x++) {
+    //   for (let y = 0; y < 6; y++) {
+    //     for (let z = 6; z < 12; z++) {
+    //       src[x][y][z] = 0x700548;
+    //     }
+    //   }
+    // }
     //
-    // src[1][0][2] = brown;
-    // src[1][1][2] = brown;
-    // src[1][2][2] = green;
+    // for (let x = 6; x < 12; x++) {
+    //   for (let y = 6; y < 10; y++) {
+    //     for (let z = 6; z < 12; z++) {
+    //       src[x][y][z] = 0x362023;
+    //     }
+    //   }
+    // }
     //
-    // src[4][0][2] = brown;
-    // src[4][1][2] = brown;
-    // src[4][2][2] = brown;
-    // src[4][3][2] = brown;
-    // src[4][4][2] = green;
+    // for (let x = 6; x < 12; x++) {
+    //   for (let z = 6; z < 12; z++) {
+    //     src[x][10][z] = 0xaaaaaa;
+    //   }
+    // }
+    //
+    // for (let x = 7; x < 11; x++) {
+    //   for (let z = 7; z < 11; z++) {
+    //     src[x][10][z] = -1;
+    //   }
+    // }
 
-    // src[0][0][0] = 0x7272ab;
-    // src[0][0][1] = 0x7272ab;
-    // src[0][1][0] = 0x7272ab;
-    // src[0][1][1] = 0x7272ab;
-    // src[1][0][0] = 0x7272ab;
-    // src[1][0][1] = 0x7272ab;
-    // src[1][1][0] = 0x7272ab;
-    // src[1][1][1] = 0x7272ab;
-    //
-    // src[2][0][0] = 0x362023;
-    // src[2][0][1] = 0x362023;
-    // src[2][1][0] = 0x362023;
-    // src[2][1][1] = 0x362023;
-    // src[3][0][0] = 0x362023;
-    // src[3][0][1] = 0x362023;
-    // src[3][1][0] = 0x362023;
-    // src[3][1][1] = 0x362023;
-    //
-    // src[0][0][2] = 0x700548;
-    // src[0][0][3] = 0x700548;
-    // src[0][1][2] = 0x700548;
-    // src[0][1][3] = 0x700548;
-    // src[1][0][2] = 0x700548;
-    // src[1][0][3] = 0x700548;
-    // src[1][1][2] = 0x700548;
-    // src[1][1][3] = 0x700548;
-
-    for (let x = 6; x < 12; x++) {
-      for (let y = 0; y < 6; y++) {
-        for (let z = 6; z < 12; z++) {
-          src[x][y][z] = 0x700548;
-        }
+    for (let x = 4; x < 14; x++) {
+      for (let z = 4; z < 14; z++) {
+        src[x][0][z] = 0x3c3c3b;
       }
     }
 
-    for (let x = 6; x < 12; x++) {
-      for (let y = 6; y < 10; y++) {
-        for (let z = 6; z < 12; z++) {
-          src[x][y][z] = 0x362023;
-        }
+    for (let x = 5; x < 13; x++) {
+      for (let z = 5; z < 13; z++) {
+        src[x][1][z] = 0x3c3c3b;
       }
     }
 
     for (let x = 6; x < 12; x++) {
       for (let z = 6; z < 12; z++) {
-        src[x][10][z] = 0xaaaaaa;
+        src[x][2][z] = 0x3c3c3b;
       }
     }
 
     for (let x = 7; x < 11; x++) {
       for (let z = 7; z < 11; z++) {
-        src[x][10][z] = -1;
+        src[x][3][z] = 0x3c3c3b;
+      }
+    }
+
+    for (let x = 8; x < 10; x++) {
+      for (let z = 8; z < 10; z++) {
+        src[x][4][z] = 0xf5d547;
       }
     }
 

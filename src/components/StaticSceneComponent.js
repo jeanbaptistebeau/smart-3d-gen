@@ -23,6 +23,7 @@ class StaticSceneComponent extends Component {
 
     const width = this.mount.clientWidth;
     const height = this.mount.clientHeight;
+    const { matrix } = this.props;
 
     // Renderer
     this.renderer = new THREE.WebGLRenderer({ antialias: false });
@@ -30,19 +31,13 @@ class StaticSceneComponent extends Component {
     this.renderer.setSize(width, height);
     this.mount.appendChild(this.renderer.domElement);
 
-    // Camera
-    this.camera = new THREE.PerspectiveCamera(50, width / height, 0.1, 1000);
-  }
-
-  buildScene() {
-    const { matrix } = this.props;
-
     // Scene
     this.scene = new THREE.Scene();
     scene.init(matrix.length, matrix[0].length, matrix[0][0].length);
 
     // Camera
     const cPos = scene.cameraPosition;
+    this.camera = new THREE.PerspectiveCamera(50, width / height, 0.1, 1000);
     this.camera.position.set(cPos.x, cPos.y, cPos.z);
     this.camera.lookAt(new THREE.Vector3(0, 0, 0));
 
@@ -80,6 +75,7 @@ class StaticSceneComponent extends Component {
     }
 
     this.sceneBuilted = true;
+    this.renderScene();
   }
 
   componentDidUpdate() {

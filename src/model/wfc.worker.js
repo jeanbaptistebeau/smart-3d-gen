@@ -1,10 +1,9 @@
 export default () => {
   // var width, height, depth;
   var N;
+  var sizeFactor;
   var patterns, relations;
   var counter = 0;
-
-  const sizeFactor = 10;
 
   const UP = 0;
   const RIGHT = 1;
@@ -12,6 +11,8 @@ export default () => {
   const LEFT = 3;
   const FRONT = 4;
   const BACK = 5;
+
+  const TIMER_MS = 100;
 
   /// Message handler
   onmessage = function(message) {
@@ -25,10 +26,17 @@ export default () => {
   };
 
   /// Start function
-  function start({ _N, src }) {
+  function start({ _N, _sizeFactor, src }) {
     N = _N;
+    sizeFactor = _sizeFactor;
 
-    console.log("Initializing...");
+    console.log(
+      "Initializing with N=",
+      N,
+      "and sizeFactor=",
+      sizeFactor,
+      "..."
+    );
 
     // width = N * sizeFactor;
     // height = N * sizeFactor;
@@ -61,7 +69,8 @@ export default () => {
 
   /// Main loop
   function waveFunctionCollapse(tiles) {
-    console.log(counter++);
+    const time_start = +new Date();
+
     var minEntropyTile = selectTile(tiles, Object.keys(patterns).length);
 
     // All tiles collapsed
@@ -125,9 +134,19 @@ export default () => {
     // Update UI
     updateUITiles(tilesToRender);
 
-    setTimeout(function() {
+    // Compute time difference
+    const time_end = +new Date();
+    const time_diff = time_end - time_start;
+
+    console.log(time_diff);
+
+    if (time_diff > TIMER_MS) {
       waveFunctionCollapse(tiles);
-    }, 100);
+    } else {
+      setTimeout(function() {
+        waveFunctionCollapse(tiles);
+      }, TIMER_MS - time_diff);
+    }
   }
 
   // ####################################################

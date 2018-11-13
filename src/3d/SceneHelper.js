@@ -65,7 +65,9 @@ export var scene = {
 
   // Creates a voxel mesh at the given coordinates
   voxelMesh: function(x, y, z, color) {
-    const geometry = new THREE.BoxGeometry(UNIT, UNIT, UNIT);
+    const geometry = new THREE.BufferGeometry().fromGeometry(
+      new THREE.BoxGeometry(UNIT, UNIT, UNIT)
+    );
     const material = new THREE.MeshLambertMaterial({ color: color });
     const cube = new THREE.Mesh(geometry, material);
 

@@ -54,8 +54,8 @@
 
 .TextField {
   background-color: #f8f9ff;
-  height: 30px;
-  border-radius: 15px;
+  height: 40px;
+  border-radius: 20px;
   padding: 0px 20px;
   font-family: "Quicksand", sans-serif;
   font-size: 1em;
@@ -69,6 +69,7 @@
 
 .BigButton {
   background-color: #f8f9ff;
+  color: #1a1b25;
   height: 50px;
   font-family: "Quicksand", sans-serif;
   font-weight: bolder;
@@ -78,6 +79,15 @@
   border-radius: 30px;
   border: none;
   margin-top: 50px;
+}
+
+.BigButton:focus {
+  outline: 0;
+}
+
+.BigButton:hover {
+  background-color: #1a1b25;
+  color: #f8f9ff;
 }
 
 .SourceScene {

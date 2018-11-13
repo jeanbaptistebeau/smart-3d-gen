@@ -33,13 +33,17 @@ class SceneComponent extends Component {
 
     // Camera
     this.camera = new THREE.PerspectiveCamera(50, width / height, 0.1, 1000);
+
+    // Scene
+    this.scene = new THREE.Scene();
+
+    this.renderScene();
   }
 
   buildScene() {
     const { size, boxSize } = this.props;
 
     // Scene
-    this.scene = new THREE.Scene();
     scene.init(
       size.width * boxSize,
       size.height * boxSize,
