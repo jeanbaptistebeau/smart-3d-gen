@@ -1,12 +1,13 @@
 import React, { Component } from "react";
 import * as THREE from "three";
-import { scene } from "../3d/SceneHelper.js";
+import { sceneHelper } from "../3d/SceneHelper.js";
 
 const OrbitControls = require("three-orbit-controls")(THREE);
 
 class SceneComponent extends Component {
   sceneBuilted = false;
   meshes = [];
+  drawUndefined = true;
 
   render() {
     return (
@@ -34,43 +35,36 @@ class SceneComponent extends Component {
     // Camera
     this.camera = new THREE.PerspectiveCamera(50, width / height, 0.1, 1000);
 
-    // Scene
-    this.scene = new THREE.Scene();
-
-    this.renderScene();
-  }
-
-  buildScene() {
-    const { size, boxSize } = this.props;
-
-    // Scene
-    scene.init(
-      size.width * boxSize,
-      size.height * boxSize,
-      size.depth * boxSize
-    );
-
-    // Camera
-    const cPos = scene.cameraPosition;
-    this.camera.position.set(cPos.x, cPos.y, cPos.z);
-    this.camera.lookAt(new THREE.Vector3(0, 0, 0));
-
     // Controls
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
     this.controls.addEventListener("change", this.renderScene);
-    this.controls.target = scene.center;
     this.controls.minDistance = 10;
     this.controls.maxDistance = 100;
     this.controls.maxPolarAngle = Math.PI / 2;
 
+    // this.renderScene();
+  }
+
+  buildScene() {
+    const { sizeFactor, N, output } = this.props.artwork;
+
+    // Scene
+    this.scene = new THREE.Scene();
+
+    // SceneHelper
+    sceneHelper.init(sizeFactor * N, sizeFactor * N, sizeFactor * N);
+
+    // Camera - Update
+    const cPos = sceneHelper.cameraPosition;
+    this.camera.position.set(cPos.x, cPos.y, cPos.z);
+    this.camera.lookAt(new THREE.Vector3(0, 0, 0));
+
+    // Controls - Update
+    this.controls.target = sceneHelper.center;
+
     // Light
     const light = new THREE.SpotLight(0xfffae8, 0.5);
-    // light.target = ground;
-    // light.shadow.mapSize.width = 1024;
-    // light.shadow.mapSize.height = 1024;
-    // light.angle = 0.8;
-    // light.shadowBias = 0.001;
-    const lPos = scene.lightPosition;
+    const lPos = sceneHelper.lightPosition;
     light.position.set(lPos.x, lPos.y, lPos.z);
     this.scene.add(light);
 
@@ -81,19 +75,19 @@ class SceneComponent extends Component {
     this.scene.add(amb);
 
     // Wireframe
-    this.scene.add(scene.wireframe());
+    this.scene.add(sceneHelper.wireframe());
 
     // Ground
-    const ground = scene.ground();
+    const ground = sceneHelper.ground();
     this.scene.add(ground);
 
     // Meshes
-    this.meshes = Array(size.width);
-    for (var x = 0; x < size.width; x++) {
-      this.meshes[x] = Array(size.height);
-      for (var y = 0; y < size.height; y++) {
-        this.meshes[x][y] = Array(size.depth);
-        for (var z = 0; z < size.depth; z++) {
+    this.meshes = Array(sizeFactor);
+    for (var x = 0; x < sizeFactor; x++) {
+      this.meshes[x] = Array(sizeFactor);
+      for (var y = 0; y < sizeFactor; y++) {
+        this.meshes[x][y] = Array(sizeFactor);
+        for (var z = 0; z < sizeFactor; z++) {
           this.meshes[x][y][z] = [];
         }
       }
@@ -103,7 +97,12 @@ class SceneComponent extends Component {
   }
 
   componentDidUpdate() {
-    if (this.props.size !== null && !this.sceneBuilted) {
+    if (this.props.reload) {
+      console.log("RELOAD SCENE");
+      this.sceneBuilted = false;
+    }
+
+    if (this.props.artwork !== null && !this.sceneBuilted) {
       this.buildScene();
     }
 
@@ -112,7 +111,7 @@ class SceneComponent extends Component {
   }
 
   updateScene() {
-    const { boxesToUpdate } = this.props;
+    const { positionsToDraw, N, output } = this.props.artwork;
 
     // Remove old voxels
     // this.voxelsInScene.forEach(function(item, index, array) {
@@ -121,49 +120,42 @@ class SceneComponent extends Component {
     // this.voxelsInScene = [];
 
     // Updates boxes
-    for (var i = 0; i < boxesToUpdate.length; i++) {
-      const box = boxesToUpdate[i];
-      const { x, y, z } = box.position;
+    for (var i = 0; i < positionsToDraw.length; i++) {
+      const { x, y, z } = positionsToDraw[i];
 
       // Remove previous meshes at the box position
       const previousMeshes = this.meshes[x][y][z];
       this.scene.remove(...previousMeshes);
 
       // Add new meshes
-      const newMeshes = this.boxMeshes(box);
+      const box = output[x][y][z];
+      const newMeshes = this.boxMeshes(box, N);
       this.meshes[x][y][z] = newMeshes;
       if (newMeshes.length > 0) this.scene.add(...newMeshes);
     }
   }
 
-  boxMeshes(box) {
+  boxMeshes(box, N) {
     var origin = {
-      x: box.position.x * this.props.boxSize,
-      y: box.position.y * this.props.boxSize,
-      z: box.position.z * this.props.boxSize
+      x: box.position.x * N,
+      y: box.position.y * N,
+      z: box.position.z * N
     };
 
     if (box.voxels === null) {
-      return [scene.undefinedMesh(origin, this.props.boxSize, box.uncertainty)];
+      if (this.drawUndefined) {
+        return [sceneHelper.undefinedMesh(origin, N, box.uncertainty)];
+      } else {
+        return [];
+      }
     } else {
-      return scene.voxelMeshes(box.voxels, origin);
+      return sceneHelper.voxelMeshes(box.voxels, origin);
     }
   }
 
   renderScene() {
     this.renderer.render(this.scene, this.camera);
   }
-
-  // voxelMesh(v) {
-  //   // If value is null, don't draw it (represents air)
-  //   if (v.value === null) return;
-  //
-  //   const voxel = scene.voxel(v.x, v.y, v.z, v.value);
-  //
-  //   // Add the mesh to the scene
-  //   this.scene.add(voxel);
-  //   this.voxelsInScene.push(voxel);
-  // }
 
   componentWillUnmount() {
     this.mount.removeChild(this.renderer.domElement);

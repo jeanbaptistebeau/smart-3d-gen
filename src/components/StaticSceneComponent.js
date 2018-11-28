@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import * as THREE from "three";
-import { scene } from "../3d/SceneHelper.js";
+import { sceneHelper } from "../3d/SceneHelper.js";
 
 const OrbitControls = require("three-orbit-controls")(THREE);
 
@@ -33,10 +33,10 @@ class StaticSceneComponent extends Component {
 
     // Scene
     this.scene = new THREE.Scene();
-    scene.init(matrix.length, matrix[0].length, matrix[0][0].length);
+    sceneHelper.init(matrix.length, matrix[0].length, matrix[0][0].length);
 
     // Camera
-    const cPos = scene.cameraPosition;
+    const cPos = sceneHelper.cameraPosition;
     this.camera = new THREE.PerspectiveCamera(50, width / height, 0.1, 1000);
     this.camera.position.set(cPos.x, cPos.y, cPos.z);
     this.camera.lookAt(new THREE.Vector3(0, 0, 0));
@@ -44,14 +44,14 @@ class StaticSceneComponent extends Component {
     // Controls
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
     this.controls.addEventListener("change", this.renderScene);
-    this.controls.target = scene.center;
+    this.controls.target = sceneHelper.center;
     this.controls.minDistance = 10;
     this.controls.maxDistance = 50;
     this.controls.maxPolarAngle = Math.PI / 2;
 
     // Light
     const light = new THREE.SpotLight(0xfffae8, 0.5);
-    const lPos = scene.lightPosition;
+    const lPos = sceneHelper.lightPosition;
     light.position.set(lPos.x, lPos.y, lPos.z);
     this.scene.add(light);
 
@@ -59,10 +59,10 @@ class StaticSceneComponent extends Component {
     this.scene.add(amb);
 
     // Wireframe
-    // this.scene.add(scene.wireframe());
+    // this.scene.add(sceneHelper.wireframe());
 
     // Ground
-    const ground = scene.ground();
+    const ground = sceneHelper.ground();
     this.scene.add(ground);
 
     // Voxels
@@ -94,7 +94,7 @@ class StaticSceneComponent extends Component {
     // If value is -1, don't draw it (represents air)
     if (value === -1) return;
 
-    const voxel = scene.voxelMesh(x, y, z, value);
+    const voxel = sceneHelper.voxelMesh(x, y, z, value);
 
     // Add the mesh to the scene
     this.scene.add(voxel);

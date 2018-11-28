@@ -2,7 +2,7 @@ import * as THREE from "three";
 
 const UNIT = 1;
 
-export var scene = {
+export var sceneHelper = {
   width: null,
   heigth: null,
   depth: null,

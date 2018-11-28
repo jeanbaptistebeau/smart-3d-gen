@@ -26,24 +26,18 @@ export default () => {
   };
 
   /// Start function
-  function start({ _N, _sizeFactor, src }) {
+  function start({ _N, _sizeFactor, allowYRotation, src }) {
     N = _N;
     sizeFactor = _sizeFactor;
 
-    console.log(
-      "Initializing with N=",
-      N,
-      "and sizeFactor=",
-      sizeFactor,
-      "..."
-    );
+    console.log("Initializing...");
+    console.log("N=", N);
+    console.log("sizeFactor=", sizeFactor);
+    console.log("allowYRotation=", allowYRotation);
 
     // width = N * sizeFactor;
     // height = N * sizeFactor;
     // depth = N * sizeFactor;
-
-    // OUT: Initialize matrix
-    this.postMessage(message.init(sizeFactor, sizeFactor, sizeFactor, N));
 
     // Creates patterns from source
     patterns = createPatterns(src);
@@ -55,8 +49,6 @@ export default () => {
     mergePatternsAndRelations();
 
     console.log("There are ", Object.keys(patterns).length, " patterns.");
-    console.log(patterns);
-    console.log(relations);
 
     // Creates output array representing tiles with states
     var tiles = createOutputArray();
@@ -75,22 +67,7 @@ export default () => {
 
     // All tiles collapsed
     if (minEntropyTile === null) {
-      console.log("Finished.");
-
-      for (let x = 0; x < tiles.length; x++) {
-        for (let y = 0; y < tiles[x].length; y++) {
-          for (let z = 0; z < tiles[x][y].length; z++) {
-            const tile = tiles[x][y][z];
-
-            if (!tileCollapsed(tile)) {
-              console.log("Tile not collapsed: ", tile);
-              for (let id in tile.state) {
-                if (tile.state[id]) console.log(id);
-              }
-            }
-          }
-        }
-      }
+      this.postMessage(message.finished());
       return;
     }
 
@@ -108,7 +85,7 @@ export default () => {
 
     // If contradiction in propagation
     if (result === false) {
-      console.log("Contradiction at ", minEntropyTile.position);
+      // console.log("Contradiction at ", minEntropyTile.position);
 
       // Restore backup
       minEntropyTile.state = backupState;
@@ -121,12 +98,12 @@ export default () => {
 
       // If tile is collapsed after forbiding this collapsing, propagate
       if (tileCollapsed(minEntropyTile)) {
-        console.log("Forbiding this assignment caused collapsing.");
+        // console.log("Forbiding this assignment caused collapsing.");
         let secondResult = propagate(minEntropyTile, tiles, tilesToRender);
         if (!secondResult) {
-          console.log(
-            "Fatal error. The current state of tiles doesn't have solution. Would need to cancel the last collapsing."
-          );
+          // console.log(
+          //   "Fatal error. The current state of tiles doesn't have solution. Would need to cancel the last collapsing."
+          // );
         }
       }
     }
@@ -137,8 +114,6 @@ export default () => {
     // Compute time difference
     const time_end = +new Date();
     const time_diff = time_end - time_start;
-
-    console.log(time_diff);
 
     if (time_diff > TIMER_MS) {
       waveFunctionCollapse(tiles);
@@ -612,14 +587,14 @@ export default () => {
 
   /// Message creator
   var message = {
-    init: (w, h, d, boxSize) => ({
-      type: "init",
-      body: { width: w, height: h, depth: d, boxSize: boxSize }
-    }),
-
     set: tilesToRender => ({
       type: "set",
       body: { tiles: tilesToRender }
+    }),
+
+    finished: () => ({
+      type: "finished",
+      body: {}
     })
   };
 };

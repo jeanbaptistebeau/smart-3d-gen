@@ -3,11 +3,39 @@
   height: 100%;
 }
 
+#right-container {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  flex-grow: 1;
+}
+
 .Scene {
   /* border: #1c1c1c solid 8px; */
   flex-grow: 1;
-  /* margin: 0px 0px 0px 0px; */
 }
+
+.SourceScene {
+  border-top: solid #ffffff 2px;
+  height: 300px;
+}
+
+/*********************** TIMELINE ***********************/
+
+.Timeline {
+  background-color: purple;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+}
+
+.Timeline .versionButton {
+  padding: 3px;
+  margin: 0 3px;
+}
+
+/*********************** TOOLBAR ***********************/
 
 .Toolbar {
   background-color: #3d314a;
@@ -29,28 +57,91 @@
   letter-spacing: 0.1em;
 }
 
+.Toolbar .BigButton {
+  margin: 20px auto;
+}
+
+/*********************** CONTROLS PANEL ***********************/
+
 .ControlsPanel {
   flex-grow: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   padding: 10px 0;
+  overflow-y: scroll;
 }
 
-.ControlsPanel * {
+.ControlsPanel > * {
   margin: 5px 0;
+  width: 80%;
 }
 
 .ControlsPanel h3 {
   text-align: left;
-  width: 70%;
   font-family: "Quicksand", sans-serif;
   font-size: 0.9em;
   color: white;
   letter-spacing: 0.1em;
+}
+
+.ControlsPanel > h3 {
+  margin-bottom: 0;
+  margin-top: 20px;
+  width: 70%;
+}
+
+/*********************** CHECK BOX ***********************/
+
+.ControlsPanel > .Checkbox {
   margin-bottom: 0;
   margin-top: 20px;
 }
+
+.ControlsPanel .Checkbox * {
+  display: inline-block;
+  margin: 5px;
+}
+
+/*********************** SLIDER ***********************/
+
+.ControlsPanel .slider {
+  -webkit-appearance: none; /* Override default CSS styles */
+  appearance: none;
+  margin-top: 12px;
+  height: 6px;
+  border-radius: 3px;
+  background: #837a97;
+  outline: none;
+}
+
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none; /* Override default look */
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 10px;
+  background: #37718e;
+  border: solid white 2px;
+  cursor: pointer; /* Cursor on hover */
+}
+
+.slider::-webkit-slider-thumb:hover {
+  background-color: #c33c54;
+}
+
+.slider::-moz-range-thumb {
+  width: 25px;
+  height: 25px;
+  background: #37718e;
+  cursor: pointer; /* Cursor on hover */
+}
+
+.slider::-moz-range-thumb:hover {
+  background-color: #c33c54;
+}
+
+/*********************** TEXT FIELD ***********************/
 
 .TextField {
   background-color: #f8f9ff;
@@ -61,15 +152,16 @@
   font-size: 1em;
   border: none;
   outline: none;
-  width: 80%;
   -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
   -moz-box-sizing: border-box; /* Firefox, other Gecko */
   box-sizing: border-box; /* Opera/IE 8+ */
 }
 
+/*********************** BIG BUTTON ***********************/
+
 .BigButton {
-  background-color: #f8f9ff;
-  color: #1a1b25;
+  background-color: #37718e;
+  color: #fff;
   height: 50px;
   font-family: "Quicksand", sans-serif;
   font-weight: bolder;
@@ -77,8 +169,12 @@
   letter-spacing: 0.1em;
   width: 66%;
   border-radius: 30px;
-  border: none;
+  border: solid 2px #f8f9ff;
   margin-top: 50px;
+}
+
+.BigButton[inversed="true"] {
+  background-color: #c33c54;
 }
 
 .BigButton:focus {
@@ -86,11 +182,9 @@
 }
 
 .BigButton:hover {
-  background-color: #1a1b25;
-  color: #f8f9ff;
+  background-color: #c33c54;
 }
 
-.SourceScene {
-  border-top: solid #ffffff 2px;
-  height: 300px;
+.BigButton[inversed="true"]:hover {
+  background-color: #37718e;
 }
