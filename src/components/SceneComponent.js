@@ -16,19 +16,24 @@ class SceneComponent extends Component {
         ref={mount => {
           this.mount = mount;
         }}
+        style={this.props.style}
       />
     );
   }
 
   componentDidMount() {
+    console.log("Mount");
     this.renderScene = this.renderScene.bind(this);
 
     const width = this.mount.clientWidth;
     const height = this.mount.clientHeight;
 
+    // window.addEventListener( 'resize', this.onWindowResize, false );
+
     // Renderer
     this.renderer = new THREE.WebGLRenderer({ antialias: false });
     this.renderer.setClearColor("#F8F9FF");
+    console.log(width, height);
     this.renderer.setSize(width, height);
     this.mount.appendChild(this.renderer.domElement);
 
@@ -38,14 +43,20 @@ class SceneComponent extends Component {
     // Controls
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
     this.controls.addEventListener("change", this.renderScene);
+    this.controls.enablePan = false;
     this.controls.minDistance = 10;
     this.controls.maxDistance = 100;
     this.controls.maxPolarAngle = Math.PI / 2;
 
-    // this.renderScene();
+    // Scene
+    this.scene = new THREE.Scene();
+
+    // Update
+    this.componentDidUpdate();
   }
 
   buildScene() {
+    console.log("Build");
     const { sizeFactor, N, output } = this.props.artwork;
 
     // Scene
@@ -57,7 +68,7 @@ class SceneComponent extends Component {
     // Camera - Update
     const cPos = sceneHelper.cameraPosition;
     this.camera.position.set(cPos.x, cPos.y, cPos.z);
-    this.camera.lookAt(new THREE.Vector3(0, 0, 0));
+    this.camera.lookAt(sceneHelper.center);
 
     // Controls - Update
     this.controls.target = sceneHelper.center;
@@ -157,6 +168,12 @@ class SceneComponent extends Component {
     this.renderer.render(this.scene, this.camera);
   }
 
+  onWindowResize() {
+    this.camera.aspect = window.innerWidth / window.innerHeight;
+    this.camera.updateProjectionMatrix();
+
+    this.renderer.setSize(window.innerWidth, window.innerHeight);
+  }
   componentWillUnmount() {
     this.mount.removeChild(this.renderer.domElement);
   }

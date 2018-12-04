@@ -38,16 +38,18 @@ class StaticSceneComponent extends Component {
     // Camera
     const cPos = sceneHelper.cameraPosition;
     this.camera = new THREE.PerspectiveCamera(50, width / height, 0.1, 1000);
-    this.camera.position.set(cPos.x, cPos.y, cPos.z);
-    this.camera.lookAt(new THREE.Vector3(0, 0, 0));
 
     // Controls
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
     this.controls.addEventListener("change", this.renderScene);
     this.controls.target = sceneHelper.center;
+    this.controls.enablePan = false;
     this.controls.minDistance = 10;
     this.controls.maxDistance = 50;
     this.controls.maxPolarAngle = Math.PI / 2;
+
+    this.camera.position.set(cPos.x, cPos.y, cPos.z);
+    this.camera.lookAt(sceneHelper.center);
 
     // Light
     const light = new THREE.SpotLight(0xfffae8, 0.5);

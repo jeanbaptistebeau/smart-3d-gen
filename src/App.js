@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import SceneComponent from "./components/SceneComponent";
+import ArtworkComponent from "./components/ArtworkComponent";
 import ToolbarComponent from "./components/ToolbarComponent";
 import TimelineComponent from "./components/TimelineComponent";
 import "./App.css";
@@ -11,7 +11,7 @@ import Artwork from "./model/Artwork.js";
 class App extends Component {
   state = {
     isCreating: false,
-    currentArtwork: null,
+    currentIndex: null,
     allArtworks: []
   };
 
@@ -19,11 +19,16 @@ class App extends Component {
 
   shouldReloadScene = true; // defines if scene should be completely reloaded
 
+  currentArtwork() {
+    return this.state.allArtworks[this.state.currentIndex];
+  }
+
   constructor() {
     super();
 
     this.handleMessage = this.handleMessage.bind(this);
     this.startWFC = this.startWFC.bind(this);
+    this.cancelWFC = this.cancelWFC.bind(this);
     this.switchToArtwork = this.switchToArtwork.bind(this);
 
     // Setup worker
@@ -37,13 +42,15 @@ class App extends Component {
 
     switch (message.data.type) {
       case "set":
-        this.shouldReloadScene = false;
-        var artwork = this.state.currentArtwork;
-        artwork.update(m.tiles);
-        this.setState({ currentArtwork: artwork });
+        if (this.state.currentIndex !== null) {
+          this.shouldReloadScene = false;
+          var allArtworks = this.state.allArtworks;
+          allArtworks[this.state.currentIndex].update(m.tiles);
+          this.setState({ allArtworks: allArtworks });
+        }
         break;
       case "finished":
-        this.state.currentArtwork.conclude();
+        this.currentArtwork().conclude();
         this.setState({ isCreating: false });
         break;
       default:
@@ -59,16 +66,20 @@ class App extends Component {
           className="Toolbar"
           isCreating={this.state.isCreating}
           startWFC={this.startWFC}
+          cancelWFC={this.cancelWFC}
         />
         <div id="right-container">
           <TimelineComponent
             className="Timeline"
             allArtworks={this.state.allArtworks}
+            currentIndex={this.state.currentIndex}
             onClick={this.switchToArtwork}
           />
-          <SceneComponent
-            className="Scene"
-            artwork={this.state.currentArtwork}
+          <ArtworkComponent
+            className="Artwork"
+            artwork={
+              this.state.currentIndex !== null ? this.currentArtwork() : null
+            }
             reload={this.shouldReloadScene}
           />
         </div>
@@ -80,9 +91,19 @@ class App extends Component {
     this.shouldReloadScene = true;
 
     this.state.allArtworks.push(artwork);
-    this.setState({ currentArtwork: artwork, isCreating: true });
+    this.setState({
+      currentIndex: this.state.allArtworks.length - 1,
+      isCreating: true
+    });
 
     this.wfcWorker.postMessage(message.start(artwork));
+  }
+
+  cancelWFC() {
+    this.state.allArtworks.pop();
+    this.setState({ currentIndex: null, isCreating: false });
+
+    this.wfcWorker.postMessage(message.cancel());
   }
 
   switchToArtwork(n) {
@@ -90,7 +111,7 @@ class App extends Component {
 
     console.log("Switch to", n);
     this.setState({
-      currentArtwork: this.state.allArtworks[n],
+      currentIndex: n,
       creating: false
     });
   }
@@ -108,7 +129,8 @@ var message = {
       allowYRotation: artwork.allowYRotation,
       src: artwork.sourceScene
     }
-  })
+  }),
+  cancel: () => ({ type: "cancel" })
 };
 
 export default App;

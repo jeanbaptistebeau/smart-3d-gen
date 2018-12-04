@@ -1,3 +1,5 @@
+import React from "react";
+
 class Artwork {
   // Inputs
   N;
@@ -36,6 +38,16 @@ class Artwork {
         }
       }
     }
+  }
+
+  descriptionParagraph() {
+    return (
+      <div className="descriptionBox">
+        <p>N: {this.N}</p>
+        <p>Size factor: {this.sizeFactor}</p>
+        <p>Allow y rotations: {this.allowYRotation ? "true" : "false"}</p>
+      </div>
+    );
   }
 
   update(boxes) {

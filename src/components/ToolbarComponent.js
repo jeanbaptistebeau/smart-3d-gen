@@ -12,6 +12,7 @@ class ToolbarComponent extends Component {
     super();
 
     this.start = this.start.bind(this);
+    this.cancel = this.cancel.bind(this);
     this.source = Models.basicBuilding();
   }
 
@@ -62,7 +63,7 @@ class ToolbarComponent extends Component {
 
         <button
           className="BigButton"
-          onClick={this.start}
+          onClick={this.props.isCreating ? this.cancel : this.start}
           inversed={this.props.isCreating ? "true" : "false"}
         >
           {this.props.isCreating ? "CANCEL" : "START"}
@@ -86,6 +87,10 @@ class ToolbarComponent extends Component {
 
     var artwork = new Artwork(N, sizeFactor, allowYRotation, this.source);
     this.props.startWFC(artwork);
+  }
+
+  cancel() {
+    this.props.cancelWFC();
   }
 
   valueOrDefault(value, value_default) {

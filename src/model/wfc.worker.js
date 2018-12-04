@@ -5,6 +5,8 @@ export default () => {
   var patterns, relations;
   var counter = 0;
 
+  var shouldContinue = true;
+
   const UP = 0;
   const RIGHT = 1;
   const DOWN = 2;
@@ -20,6 +22,9 @@ export default () => {
       case "start":
         start(message.data.body);
         break;
+      case "cancel":
+        shouldContinue = false;
+        break;
       default:
         break;
     }
@@ -29,11 +34,9 @@ export default () => {
   function start({ _N, _sizeFactor, allowYRotation, src }) {
     N = _N;
     sizeFactor = _sizeFactor;
+    shouldContinue = true;
 
     console.log("Initializing...");
-    console.log("N=", N);
-    console.log("sizeFactor=", sizeFactor);
-    console.log("allowYRotation=", allowYRotation);
 
     // width = N * sizeFactor;
     // height = N * sizeFactor;
@@ -42,11 +45,23 @@ export default () => {
     // Creates patterns from source
     patterns = createPatterns(src);
 
+    if (shouldContinue === false) {
+      return;
+    }
+
     // Creates relations from patterns
     relations = createRelations();
 
+    if (shouldContinue === false) {
+      return;
+    }
+
     // Merge identical patterns
     mergePatternsAndRelations();
+
+    if (shouldContinue === false) {
+      return;
+    }
 
     console.log("There are ", Object.keys(patterns).length, " patterns.");
 
@@ -63,7 +78,15 @@ export default () => {
   function waveFunctionCollapse(tiles) {
     const time_start = +new Date();
 
+    if (shouldContinue === false) {
+      return;
+    }
+
     var minEntropyTile = selectTile(tiles, Object.keys(patterns).length);
+
+    if (shouldContinue === false) {
+      return;
+    }
 
     // All tiles collapsed
     if (minEntropyTile === null) {
@@ -80,8 +103,16 @@ export default () => {
     // Collapse and store the id
     let idCollapsed = collapse(minEntropyTile);
 
+    if (shouldContinue === false) {
+      return;
+    }
+
     // Propagate and store the result (contradiction or not)
     let result = propagate(minEntropyTile, tiles, tilesToRender);
+
+    if (shouldContinue === false) {
+      return;
+    }
 
     // If contradiction in propagation
     if (result === false) {
@@ -108,8 +139,16 @@ export default () => {
       }
     }
 
+    if (shouldContinue === false) {
+      return;
+    }
+
     // Update UI
     updateUITiles(tilesToRender);
+
+    if (shouldContinue === false) {
+      return;
+    }
 
     // Compute time difference
     const time_end = +new Date();

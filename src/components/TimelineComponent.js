@@ -20,11 +20,12 @@ class TimelineComponent extends Component {
         <button
           className="versionButton"
           key={i}
+          isselected={i === this.props.currentIndex ? "true" : "false"}
           onClick={() => {
             this.props.onClick(i);
           }}
         >
-          Version {i}
+          Version {i + 1}
         </button>
       );
 

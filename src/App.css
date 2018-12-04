@@ -10,8 +10,31 @@
   flex-grow: 1;
 }
 
-.Scene {
+/*********************** ARTWORK/SCENE ***********************/
+
+.Artwork {
   /* border: #1c1c1c solid 8px; */
+  position: relative;
+  flex-grow: 1;
+  display: flex;
+  background-color: #f8f9ff;
+}
+
+.placeholderText {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-grow: 1;
+}
+
+.placeholderText p {
+  font-family: "Quicksand", sans-serif;
+  font-size: 1.2em;
+  color: #aaa;
+}
+
+.Scene {
+  background-color: #f00;
   flex-grow: 1;
 }
 
@@ -20,10 +43,22 @@
   height: 300px;
 }
 
+.descriptionBox {
+  position: absolute;
+  padding: 20px;
+  bottom: 10px;
+  left: 10px;
+  color: white;
+  border-radius: 20px;
+  font-family: "Quicksand", sans-serif;
+  font-size: 1em;
+  background-color: rgba(0, 0, 0, 0.8);
+}
+
 /*********************** TIMELINE ***********************/
 
 .Timeline {
-  background-color: purple;
+  background-color: #f8f9ff;
   height: 50px;
   display: flex;
   align-items: center;
@@ -31,8 +66,24 @@
 }
 
 .Timeline .versionButton {
-  padding: 3px;
-  margin: 0 3px;
+  padding: 0 15px;
+  height: 30px;
+  margin: 0 5px;
+  font-family: "Quicksand", sans-serif;
+  font-size: 0.8em;
+  color: #1a1b24;
+  border: solid 1px #1a1b24;
+  border-radius: 15px;
+  background-color: transparent;
+}
+
+.Timeline .versionButton[isselected="true"] {
+  background-color: #1a1b24;
+  color: white;
+}
+
+.Timeline .versionButton:focus {
+  outline: 0;
 }
 
 /*********************** TOOLBAR ***********************/
