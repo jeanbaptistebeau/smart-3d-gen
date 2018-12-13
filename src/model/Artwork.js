@@ -1,11 +1,9 @@
 import React from "react";
+import Palette from "./Palette.js";
 
 class Artwork {
-  // Inputs
-  N;
-  sizeFactor;
-  allowYRotation;
-  sourceScene;
+  // Palette (inputs)
+  palette;
 
   // Output
   output; // 3d array of boxes
@@ -13,22 +11,20 @@ class Artwork {
   // Rendering
   positionsToDraw;
 
-  constructor(_N, _sizeFactor, _allowYRotation, _sourceScene) {
-    // Input parameters
-    this.N = _N;
-    this.sizeFactor = _sizeFactor;
-    this.allowYRotation = _allowYRotation;
-    this.sourceScene = _sourceScene;
+  constructor(_palette) {
+    // Palette
+    this.palette = new Palette(_palette);
 
+    // Rendering
     this.positionsToDraw = [];
 
     // Output array & rendering
-    this.output = Array(this.sizeFactor);
-    for (let x = 0; x < this.sizeFactor; x++) {
-      this.output[x] = Array(this.sizeFactor);
-      for (let y = 0; y < this.sizeFactor; y++) {
-        this.output[x][y] = Array(this.sizeFactor);
-        for (let z = 0; z < this.sizeFactor; z++) {
+    this.output = Array(this.palette.sizeFactor);
+    for (let x = 0; x < this.palette.sizeFactor; x++) {
+      this.output[x] = Array(this.palette.sizeFactor);
+      for (let y = 0; y < this.palette.sizeFactor; y++) {
+        this.output[x][y] = Array(this.palette.sizeFactor);
+        for (let z = 0; z < this.palette.sizeFactor; z++) {
           this.positionsToDraw.push({ x: x, y: y, z: z });
           this.output[x][y][z] = {
             position: { x: x, y: y, z: z },
@@ -38,16 +34,6 @@ class Artwork {
         }
       }
     }
-  }
-
-  descriptionParagraph() {
-    return (
-      <div className="descriptionBox">
-        <p>N: {this.N}</p>
-        <p>Size factor: {this.sizeFactor}</p>
-        <p>Allow y rotations: {this.allowYRotation ? "true" : "false"}</p>
-      </div>
-    );
   }
 
   update(boxes) {

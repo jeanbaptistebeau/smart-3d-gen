@@ -3,30 +3,21 @@ import SceneComponent from "./SceneComponent";
 
 class ArtworkComponent extends Component {
   render() {
-    const { artwork } = this.props;
-
-    let scene = (
-      <div className="placeholderText">
-        <p>Press Start to start generation.</p>
-      </div>
-    );
-    let description = null;
-
-    if (artwork !== null) {
-      scene = (
-        <SceneComponent
-          className="Scene"
-          artwork={artwork}
-          reload={this.props.reload}
-        />
-      );
-      description = artwork.descriptionParagraph();
-    }
+    const { allArtworks, currentIndex } = this.props;
 
     return (
       <div className={this.props.className}>
-        {description}
-        {scene}
+        <div className="placeholderText">
+          <p>Press Start to start generation.</p>
+        </div>
+        {allArtworks.map((artwork, index) => (
+          <SceneComponent
+            className="Scene"
+            artwork={artwork}
+            key={index}
+            style={{ display: index === currentIndex ? "block" : "none" }}
+          />
+        ))}
       </div>
     );
   }

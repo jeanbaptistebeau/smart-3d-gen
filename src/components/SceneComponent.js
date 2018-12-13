@@ -57,7 +57,8 @@ class SceneComponent extends Component {
 
   buildScene() {
     console.log("Build");
-    const { sizeFactor, N, output } = this.props.artwork;
+    const { palette, output } = this.props.artwork;
+    const { sizeFactor, N } = palette;
 
     // Scene
     this.scene = new THREE.Scene();
@@ -108,11 +109,6 @@ class SceneComponent extends Component {
   }
 
   componentDidUpdate() {
-    if (this.props.reload) {
-      console.log("RELOAD SCENE");
-      this.sceneBuilted = false;
-    }
-
     if (this.props.artwork !== null && !this.sceneBuilted) {
       this.buildScene();
     }
@@ -122,7 +118,7 @@ class SceneComponent extends Component {
   }
 
   updateScene() {
-    const { positionsToDraw, N, output } = this.props.artwork;
+    const { positionsToDraw, palette, output } = this.props.artwork;
 
     // Remove old voxels
     // this.voxelsInScene.forEach(function(item, index, array) {
@@ -140,7 +136,7 @@ class SceneComponent extends Component {
 
       // Add new meshes
       const box = output[x][y][z];
-      const newMeshes = this.boxMeshes(box, N);
+      const newMeshes = this.boxMeshes(box, palette.N);
       this.meshes[x][y][z] = newMeshes;
       if (newMeshes.length > 0) this.scene.add(...newMeshes);
     }

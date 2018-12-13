@@ -7,17 +7,17 @@ import "./App.css";
 import worker from "./model/wfc.worker.js";
 import WebWorker from "./model/WebWorker";
 import Artwork from "./model/Artwork.js";
+import Palette from "./model/Palette.js";
 
 class App extends Component {
   state = {
-    isCreating: false,
+    currentPalette: null,
     currentIndex: null,
-    allArtworks: []
+    allArtworks: [],
+    currentState: null
   };
 
   wfcWorker = null;
-
-  shouldReloadScene = true; // defines if scene should be completely reloaded
 
   currentArtwork() {
     return this.state.allArtworks[this.state.currentIndex];
@@ -29,11 +29,19 @@ class App extends Component {
     this.handleMessage = this.handleMessage.bind(this);
     this.startWFC = this.startWFC.bind(this);
     this.cancelWFC = this.cancelWFC.bind(this);
+    this.create = this.create.bind(this);
     this.switchToArtwork = this.switchToArtwork.bind(this);
 
     // Setup worker
     this.wfcWorker = new WebWorker(worker);
     this.wfcWorker.onmessage = this.handleMessage;
+
+    // Setup state
+    this.state.currentPalette = new Palette();
+    this.state.currentIndex = null;
+    this.state.currentState = "new";
+
+    console.log("Initial palette", this.state.currentPalette);
   }
 
   // Handles messages received from web worker
@@ -43,15 +51,13 @@ class App extends Component {
     switch (message.data.type) {
       case "set":
         if (this.state.currentIndex !== null) {
-          this.shouldReloadScene = false;
           var allArtworks = this.state.allArtworks;
           allArtworks[this.state.currentIndex].update(m.tiles);
           this.setState({ allArtworks: allArtworks });
         }
         break;
       case "finished":
-        this.currentArtwork().conclude();
-        this.setState({ isCreating: false });
+        this.finishedWFC();
         break;
       default:
         break;
@@ -64,9 +70,15 @@ class App extends Component {
       <div className="App">
         <ToolbarComponent
           className="Toolbar"
-          isCreating={this.state.isCreating}
+          palette={
+            this.state.currentIndex != null
+              ? this.currentArtwork().palette
+              : this.state.currentPalette
+          }
+          currentState={this.state.currentState}
           startWFC={this.startWFC}
           cancelWFC={this.cancelWFC}
+          create={this.create}
         />
         <div id="right-container">
           <TimelineComponent
@@ -77,42 +89,60 @@ class App extends Component {
           />
           <ArtworkComponent
             className="Artwork"
-            artwork={
-              this.state.currentIndex !== null ? this.currentArtwork() : null
-            }
-            reload={this.shouldReloadScene}
+            currentIndex={this.state.currentIndex}
+            allArtworks={this.state.allArtworks}
           />
         </div>
       </div>
     );
   }
 
-  startWFC(artwork) {
-    this.shouldReloadScene = true;
+  // Creates a new palette for preparing a future artwork
+  create() {
+    console.log("Create new palette");
+    this.setState({
+      currentPalette: new Palette(this.state.currentPalette),
+      currentIndex: null,
+      currentState: "new"
+    });
+  }
+
+  // Starts WFC generation
+  startWFC(palette) {
+    console.log("Start generation with", palette);
+
+    let artwork = new Artwork(palette);
 
     this.state.allArtworks.push(artwork);
     this.setState({
+      currentPalette: null,
       currentIndex: this.state.allArtworks.length - 1,
-      isCreating: true
+      currentState: "creating"
     });
 
     this.wfcWorker.postMessage(message.start(artwork));
   }
 
+  // Cancels WFC generation
   cancelWFC() {
     this.state.allArtworks.pop();
-    this.setState({ currentIndex: null, isCreating: false });
+    this.setState({ currentIndex: null, currentState: "new" });
 
     this.wfcWorker.postMessage(message.cancel());
   }
 
-  switchToArtwork(n) {
-    this.shouldReloadScene = true;
+  // Finished WFC generation
+  finishedWFC() {
+    this.currentArtwork().conclude();
+    this.setState({ currentState: "finished" });
+  }
 
+  // Switch to a different artwork to display
+  switchToArtwork(n) {
     console.log("Switch to", n);
     this.setState({
       currentIndex: n,
-      creating: false
+      currentState: "finished"
     });
   }
 }
@@ -124,10 +154,10 @@ var message = {
   start: artwork => ({
     type: "start",
     body: {
-      _N: artwork.N,
-      _sizeFactor: artwork.sizeFactor,
-      allowYRotation: artwork.allowYRotation,
-      src: artwork.sourceScene
+      _N: artwork.palette.N,
+      _sizeFactor: artwork.palette.sizeFactor,
+      allowYRotation: artwork.palette.allowYRotation,
+      src: artwork.palette.positives[0]
     }
   }),
   cancel: () => ({ type: "cancel" })
