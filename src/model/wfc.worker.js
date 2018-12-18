@@ -3,7 +3,6 @@ export default () => {
   var N;
   var sizeFactor;
   var patterns, relations;
-  var counter = 0;
 
   var shouldContinue = true;
 

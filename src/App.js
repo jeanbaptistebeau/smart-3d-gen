@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import ArtworkComponent from "./components/ArtworkComponent";
 import ToolbarComponent from "./components/ToolbarComponent";
 import TimelineComponent from "./components/TimelineComponent";
+import EditorComponent from "./components/editor/EditorComponent";
 import "./App.css";
 
 import worker from "./model/wfc.worker.js";
@@ -31,6 +32,7 @@ class App extends Component {
     this.cancelWFC = this.cancelWFC.bind(this);
     this.create = this.create.bind(this);
     this.switchToArtwork = this.switchToArtwork.bind(this);
+    this.openEditorWithMatrix = this.openEditorWithMatrix.bind(this);
 
     // Setup worker
     this.wfcWorker = new WebWorker(worker);
@@ -68,6 +70,8 @@ class App extends Component {
   render() {
     return (
       <div className="App">
+        <EditorComponent className="Editor" ref={ref => (this.editor = ref)} />
+
         <ToolbarComponent
           className="Toolbar"
           palette={
@@ -79,6 +83,7 @@ class App extends Component {
           startWFC={this.startWFC}
           cancelWFC={this.cancelWFC}
           create={this.create}
+          openEditor={this.openEditorWithMatrix}
         />
         <div id="right-container">
           <TimelineComponent
@@ -144,6 +149,11 @@ class App extends Component {
       currentIndex: n,
       currentState: "finished"
     });
+  }
+
+  // Opens editor with given matrix (or none)
+  openEditorWithMatrix(matrix) {
+    this.editor.show();
   }
 }
 

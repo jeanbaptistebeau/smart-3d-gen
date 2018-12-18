@@ -1,4 +1,3 @@
-import React from "react";
 import { Models } from "../3d/Models.js";
 
 class Palette {

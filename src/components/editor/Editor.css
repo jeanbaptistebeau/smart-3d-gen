@@ -1,0 +1,88 @@
+:local(.overlay) {
+  position: fixed;
+  top: 0px;
+  left: 0px;
+  width: 100%;
+  height: 100%;
+  z-index: 99;
+  background-color: rgba(0, 0, 0, 0.3);
+  display: none;
+}
+
+:local(.overlay[visible="true"]) {
+  display: block;
+}
+
+:local(.window) {
+  display: flex;
+  align-items: stretch;
+  flex-direction: column;
+  width: 70%;
+  margin-left: -35%;
+  height: 600px;
+  margin-top: -300px;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  background-color: #fff;
+  border-radius: 2px;
+  z-index: 100;
+  padding: 15px;
+  box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.14), 0px 4px 8px rgba(0, 0, 0, 0.28);
+  transition-property: transform, opacity;
+  transition-timing-function: ease;
+  transition-duration: 0.5s;
+  opacity: 0;
+  transform: scale(0.7);
+}
+
+:local(.window[visible="true"]) {
+  opacity: 1;
+  transform: scale(1);
+}
+
+:local(.navbar) {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+:local(.buttons) {
+  border: none;
+  font-size: 1.5em;
+  cursor: pointer;
+}
+
+:local(.mainWindow) {
+  flex-grow: 1;
+  display: flex;
+}
+
+:local(.scene) {
+  flex-grow: 1;
+}
+
+:local(.colorPalette) {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  width: 100px;
+  overflow-y: scroll;
+  padding: 5px;
+}
+
+:local(.colorButton) {
+  width: 30px;
+  height: 30px;
+  border-radius: 15px;
+  border: none;
+  margin: 6px;
+}
+
+:local(.colorButton[isselected="true"]) {
+  border: solid 2px #555;
+}
+
+:local(.colorButton:focus) {
+  outline: none;
+}

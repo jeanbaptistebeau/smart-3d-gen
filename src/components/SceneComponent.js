@@ -24,6 +24,9 @@ class SceneComponent extends Component {
   componentDidMount() {
     console.log("Mount");
     this.renderScene = this.renderScene.bind(this);
+    this.onWindowResize = this.onWindowResize.bind(this);
+
+    window.addEventListener("resize", this.onWindowResize);
 
     const width = this.mount.clientWidth;
     const height = this.mount.clientHeight;
@@ -57,7 +60,7 @@ class SceneComponent extends Component {
 
   buildScene() {
     console.log("Build");
-    const { palette, output } = this.props.artwork;
+    const { palette } = this.props.artwork;
     const { sizeFactor, N } = palette;
 
     // Scene
@@ -165,10 +168,12 @@ class SceneComponent extends Component {
   }
 
   onWindowResize() {
-    this.camera.aspect = window.innerWidth / window.innerHeight;
-    this.camera.updateProjectionMatrix();
-
-    this.renderer.setSize(window.innerWidth, window.innerHeight);
+    //TODO
+    // console.log(window.innerWidth, window.innerHeight);
+    // this.camera.aspect = window.innerWidth / window.innerHeight;
+    // this.camera.updateProjectionMatrix();
+    //
+    // this.renderer.setSize(window.innerWidth, window.innerHeight);
   }
   componentWillUnmount() {
     this.mount.removeChild(this.renderer.domElement);

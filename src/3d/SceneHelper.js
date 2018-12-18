@@ -35,6 +35,11 @@ export var sceneHelper = {
     );
   },
 
+  moveVoxelToPosition: function(voxel, x, y, z) {
+    voxel.position.set(x * UNIT, y * UNIT, z * UNIT);
+    this.moveToCorner(voxel, UNIT, UNIT, UNIT);
+  },
+
   // Set object reference to corner
   moveToCorner: function(object, w, h, d) {
     const length = Math.sqrt(Math.pow(w, 2) + Math.pow(h, 2) + Math.pow(d, 2));
@@ -71,8 +76,7 @@ export var sceneHelper = {
     const material = new THREE.MeshLambertMaterial({ color: color });
     const cube = new THREE.Mesh(geometry, material);
 
-    cube.position.set(x * UNIT, y * UNIT, z * UNIT);
-    this.moveToCorner(cube, UNIT, UNIT, UNIT);
+    this.moveVoxelToPosition(cube, x, y, z);
     return cube;
   },
 
@@ -96,6 +100,19 @@ export var sceneHelper = {
       origin.z * UNIT + offset
     );
     this.moveToCorner(cube, realSize, realSize, realSize);
+    return cube;
+  },
+
+  // Creates a voxel brush for the editor
+  brushMesh: function() {
+    const geometry = new THREE.BoxBufferGeometry(UNIT, UNIT, UNIT);
+    const material = new THREE.MeshBasicMaterial({
+      color: 0x000,
+      opacity: 0.2,
+      transparent: true
+    });
+
+    const cube = new THREE.Mesh(geometry, material);
     return cube;
   },
 

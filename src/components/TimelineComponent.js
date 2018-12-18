@@ -1,10 +1,6 @@
 import React, { Component } from "react";
 
 class TimelineComponent extends Component {
-  constructor() {
-    super();
-  }
-
   render() {
     return <div className={this.props.className}>{this.versionButtons()}</div>;
   }
@@ -14,7 +10,7 @@ class TimelineComponent extends Component {
     var versionButtons = [];
 
     for (let i = 0; i < allArtworks.length; i++) {
-      const artwork = allArtworks[i];
+      // const artwork = allArtworks[i];
 
       var button = (
         <button

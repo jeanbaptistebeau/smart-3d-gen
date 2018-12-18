@@ -119,7 +119,11 @@ class ToolbarComponent extends Component {
           </div>
 
           <div>
-            <h3>Positives</h3>
+            <div>
+              <h3>Positives</h3>
+              <button onClick={() => this.props.openEditor(null)}>Add</button>
+            </div>
+
             {this.state.palette.positives.map((matrix, index) => (
               <StaticSceneComponent
                 className="StaticScene"
@@ -130,7 +134,11 @@ class ToolbarComponent extends Component {
           </div>
 
           <div>
-            <h3>Negatives</h3>
+            <div>
+              <h3>Negatives</h3>
+              <button onClick={() => this.props.openEditor(null)}>Add</button>
+            </div>
+
             {this.state.palette.negatives.map((matrix, index) => (
               <StaticSceneComponent
                 className="StaticScene"
