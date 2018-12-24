@@ -140,5 +140,14 @@ export var sceneHelper = {
     this.moveToCorner(ground, this.width, UNIT, this.depth);
 
     return ground;
+  },
+
+  // Creates grid helper for the world
+  grid: function() {
+    let gridHelper = new THREE.GridHelper(this.width / 2, 1);
+    gridHelper.position.x += this.width / 2;
+    gridHelper.position.z += this.depth / 2;
+
+    return gridHelper;
   }
 };

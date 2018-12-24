@@ -6,14 +6,21 @@ import styles from "./Editor.css";
 class EditorComponent extends Component {
   constructor(props) {
     super(props);
-    this.state = { isVisible: false, givenMatrix: null, brushColorIndex: 0 };
+    this.state = { isVisible: false, brushColorIndex: 0 };
   }
 
-  show(matrix) {
-    this.setState({ isVisible: true, givenMatrix: matrix });
+  show(matrix, saveCallBack) {
+    this.sceneComponent.buildScene(matrix);
+    this.setState({
+      isVisible: true,
+      saveCallBack: saveCallBack
+    });
   }
 
-  hide() {
+  hide(save) {
+    if (save) {
+      this.state.saveCallBack(this.sceneComponent.saveSource());
+    }
     this.setState({ isVisible: false });
   }
 
@@ -37,21 +44,23 @@ class EditorComponent extends Component {
     ));
 
     return (
-      <div>
+      <div className="Editor">
         <div className={styles.overlay} {...isVisible} />
         <div className={styles.window} {...isVisible}>
           <div className={styles.navbar}>
-            <button onClick={() => this.hide()} className={styles.buttons}>
+            <button onClick={() => this.hide(false)} className={styles.buttons}>
               <i className="far fa-times-circle" />
             </button>
-            <button onClick={() => this.hide()} className={styles.buttons}>
+            <button onClick={() => this.hide(true)} className={styles.buttons}>
               <i className="far fa-check-circle" />
             </button>
           </div>
           <div className={styles.mainWindow}>
             <EditableSceneComponent
               className={styles.scene}
-              matrix={this.state.givenMatrix}
+              ref={sc => {
+                this.sceneComponent = sc;
+              }}
               brushColor={COLORS[this.state.brushColorIndex]}
             />
             <div className={styles.colorPalette}>{colorCircles}</div>

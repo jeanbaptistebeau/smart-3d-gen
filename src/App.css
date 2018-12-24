@@ -3,6 +3,10 @@
   height: 100%;
 }
 
+.Editor {
+  height: 100%;
+}
+
 #right-container {
   display: flex;
   flex-direction: column;
@@ -32,13 +36,30 @@
   color: #aaa;
 }
 
-.Artwork > * {
+.Artwork .Scene,
+.Artwork .placeholderText {
   background-color: transparent;
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
+}
+
+.ExportButton {
+  color: #333;
+  background-color: transparent;
+  border: none;
+  font-size: 1.5em;
+  cursor: pointer;
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  margin: 15px;
+}
+
+.ExportButton:hover {
+  outline: none;
 }
 
 /*********************** TIMELINE ***********************/
@@ -103,22 +124,50 @@
   margin-right: auto;
 }
 
-/*********************** STATIC SCENE ***********************/
+/*********************** SCENES SNAPSHOTS ***********************/
 
-.StaticScene {
+.Toolbar .Snapshot {
   margin-top: 10px;
   border: solid #ffffff 2px;
+  width: 100%;
   padding-top: 100%; /* For aspect ratio of 1*/
   position: relative; /* For aspect ratio of 1*/
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: 50% 50%;
 }
 
-/* For aspect ratio of 1*/
-.StaticScene canvas {
+.Toolbar .Snapshot button {
+  color: white;
+  background-color: transparent;
+  border: none;
+  font-size: 1.3em;
+  cursor: pointer;
   position: absolute;
   top: 0;
-  bottom: 0;
+  margin: 10px;
+}
+
+.Toolbar .Snapshot button:focus {
+  outline: none;
+}
+
+.Toolbar .Snapshot .DeleteButton {
   left: 0;
+}
+
+.Toolbar .Snapshot .EditButton {
   right: 0;
+}
+
+.Toolbar .Checkbox {
+  margin-top: 5px;
+  margin-bottom: 20px;
+}
+
+.Toolbar .Checkbox * {
+  display: inline-block;
+  margin: 5px;
 }
 
 /*********************** CONTROLS PANEL ***********************/
@@ -144,13 +193,6 @@
   font-weight: 400;
   color: white;
   letter-spacing: 0.1em;
-}
-
-/*********************** CHECK BOX ***********************/
-
-.ControlsPanel .Checkbox * {
-  display: inline-block;
-  margin: 5px;
 }
 
 /*********************** SLIDER ***********************/
@@ -208,6 +250,30 @@
   -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
   -moz-box-sizing: border-box; /* Firefox, other Gecko */
   box-sizing: border-box; /* Opera/IE 8+ */
+}
+
+/*********************** POSITIVES & NEGATIVES ***********************/
+
+.ListHeader {
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.ListHeader h3 {
+  flex-grow: 1;
+}
+
+.AddButton {
+  color: white;
+  background-color: transparent;
+  border: none;
+  font-size: 1.5em;
+  cursor: pointer;
+}
+
+.AddButton:focus {
+  outline: none;
 }
 
 /*********************** BIG BUTTON ***********************/

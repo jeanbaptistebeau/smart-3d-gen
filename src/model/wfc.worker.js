@@ -30,39 +30,77 @@ export default () => {
   };
 
   /// Start function
-  function start({ _N, _sizeFactor, allowYRotation, src }) {
+  function start({ _N, _sizeFactor, allowYRotation, positives, negatives }) {
     N = _N;
     sizeFactor = _sizeFactor;
     shouldContinue = true;
 
-    console.log("Initializing...");
+    patterns = {};
+    relations = {};
+
+    let patternCounter = 0;
+
+    console.log("Initializing with", positives.length, "sources...");
 
     // width = N * sizeFactor;
     // height = N * sizeFactor;
     // depth = N * sizeFactor;
 
-    // Creates patterns from source
-    patterns = createPatterns(src);
+    let matrices = [];
 
-    if (shouldContinue === false) {
-      return;
+    // FOR EACH SOURCE
+    for (let i = 0; i < positives.length; i++) {
+      const src = positives[i].matrix;
+      const allowYRotation = positives[i].allowYRotation;
+
+      matrices.push(src);
+
+      // Add rotations
+      if (allowYRotation) {
+        const allRotations = getYRotations(src);
+        for (let j = 0; j < allRotations.length; j++) {
+          matrices.push(allRotations[j]);
+        }
+      }
     }
 
-    // Creates relations from patterns
-    relations = createRelations();
+    // FOR EACH MATRIX
+    for (let i = 0; i < matrices.length; i++) {
+      const src = matrices[i];
 
-    if (shouldContinue === false) {
-      return;
+      // Creates patterns from source
+      let { srcPatterns, counterEnd } = createPatterns(src, patternCounter);
+      patternCounter = counterEnd;
+
+      if (shouldContinue === false) {
+        return;
+      }
+
+      // Creates relations from patterns
+      let srcRelations = createRelations(srcPatterns);
+
+      if (shouldContinue === false) {
+        return;
+      }
+
+      // Merge local identical patterns (in same source)
+      srcPatterns = mergePatternsAndRelations(srcPatterns, srcRelations);
+
+      // Append to global array
+      Object.assign(patterns, srcPatterns);
+      Object.assign(relations, srcRelations);
+
+      if (shouldContinue === false) {
+        return;
+      }
+
+      console.log(Object.keys(srcPatterns).length, "local patterns.");
     }
 
-    // Merge identical patterns
-    mergePatternsAndRelations();
+    // Merge global arrays (between different sources)
+    patterns = mergePatternsAndRelations(patterns, relations);
 
-    if (shouldContinue === false) {
-      return;
-    }
-
-    console.log("There are ", Object.keys(patterns).length, " patterns.");
+    console.log(Object.keys(patterns).length, "patterns in total.");
 
     // Creates output array representing tiles with states
     var tiles = createOutputArray();
@@ -305,15 +343,15 @@ export default () => {
   // WFC Initialization
 
   /// Creates all the N-patterns from the source
-  function createPatterns(src) {
-    var patterns = {};
-    var counter = 0;
+  function createPatterns(src, counterStart) {
+    var _patterns = {};
+    var counter = counterStart;
 
     // Initialize all patterns
     for (let x = 0; x <= src.length - N; x++) {
       for (let y = 0; y <= src[x].length - N; y++) {
         for (let z = 0; z <= src[x][y].length - N; z++) {
-          patterns[counter] = {
+          _patterns[counter] = {
             offset: { x: x, y: y, z: z },
             grid: emptyGrid()
           };
@@ -327,10 +365,10 @@ export default () => {
     for (let x = 0; x < src.length; x++) {
       for (let y = 0; y < src[x].length; y++) {
         for (let z = 0; z < src[x][y].length; z++) {
-          for (let id in patterns) {
-            const offset = patterns[id].offset;
+          for (let id in _patterns) {
+            const offset = _patterns[id].offset;
             setPatternValue(
-              patterns[id],
+              _patterns[id],
               src[x][y][z],
               x - offset.x,
               y - offset.y,
@@ -341,7 +379,7 @@ export default () => {
       }
     }
 
-    return patterns;
+    return { srcPatterns: _patterns, counterEnd: counter };
   }
 
   // Creates an empty pattern
@@ -361,6 +399,35 @@ export default () => {
     return p;
   }
 
+  /// Rotates the source along the Y axis
+  function getYRotations(src) {
+    const size = src.length;
+
+    let rotation90 = new Array(size);
+    let rotation180 = new Array(size);
+    let rotation270 = new Array(size);
+
+    for (let x = 0; x < size; x++) {
+      rotation90[x] = new Array(size);
+      rotation180[x] = new Array(size);
+      rotation270[x] = new Array(size);
+
+      for (let y = 0; y < size; y++) {
+        rotation90[x][y] = new Array(size);
+        rotation180[x][y] = new Array(size);
+        rotation270[x][y] = new Array(size);
+
+        for (let z = 0; z < size; z++) {
+          rotation90[x][y][z] = src[size - z - 1][y][x];
+          rotation180[x][y][z] = src[size - x - 1][y][size - z - 1];
+          rotation270[x][y][z] = src[z][y][size - x - 1];
+        }
+      }
+    }
+
+    return [rotation90, rotation180, rotation270];
+  }
+
   /// Sets a specific value in a pattern
   function setPatternValue(pattern, value, x, y, z) {
     if (x >= 0 && y >= 0 && z >= 0 && x < N && y < N && z < N) {
@@ -369,66 +436,67 @@ export default () => {
   }
 
   /// Creates the relations between the patterns
-  function createRelations() {
-    var relations = {};
+  function createRelations(_patterns) {
+    var _relations = {};
 
     // Initialize with empty arrays
-    for (let id in patterns) {
-      relations[id] = Array(6);
-      for (let dir = 0; dir < relations[id].length; dir++) {
-        relations[id][dir] = [];
+    for (let id in _patterns) {
+      _relations[id] = Array(6);
+      for (let dir = 0; dir < _relations[id].length; dir++) {
+        _relations[id][dir] = [];
       }
     }
 
-    for (let id1 in patterns) {
-      const pattern1 = patterns[id1];
+    for (let id1 in _patterns) {
+      const pattern1 = _patterns[id1];
       const o1 = pattern1.offset;
 
-      for (let id2 in patterns) {
-        const pattern2 = patterns[id2];
+      for (let id2 in _patterns) {
+        const pattern2 = _patterns[id2];
         const o2 = pattern2.offset;
 
         // FRONT
         if (o2.x === o1.x && o2.y === o1.y && o2.z === o1.z + N)
-          relations[id1][FRONT].push(id2);
+          _relations[id1][FRONT].push(id2);
 
         // BACK
         if (o2.x === o1.x && o2.y === o1.y && o2.z === o1.z - N)
-          relations[id1][BACK].push(id2);
+          _relations[id1][BACK].push(id2);
 
         // UP
         if (o2.x === o1.x && o2.y === o1.y + N && o2.z === o1.z)
-          relations[id1][UP].push(id2);
+          _relations[id1][UP].push(id2);
 
         // DOWN
         if (o2.x === o1.x && o2.y === o1.y - N && o2.z === o1.z)
-          relations[id1][DOWN].push(id2);
+          _relations[id1][DOWN].push(id2);
 
         // RIGHT
         if (o2.x === o1.x + N && o2.y === o1.y && o2.z === o1.z)
-          relations[id1][RIGHT].push(id2);
+          _relations[id1][RIGHT].push(id2);
 
         // LEFT
         if (o2.x === o1.x - N && o2.y === o1.y && o2.z === o1.z)
-          relations[id1][LEFT].push(id2);
+          _relations[id1][LEFT].push(id2);
       }
     }
 
-    return relations;
+    return _relations;
   }
 
   /// Merges identical patterns, i.e with the exact same grid
-  function mergePatternsAndRelations() {
+  function mergePatternsAndRelations(_patterns, _relations) {
     var newPatterns = {};
     var identicalPatterns = {};
 
-    for (let id in patterns) {
-      const pattern = patterns[id];
+    for (let id in _patterns) {
+      const pattern = _patterns[id];
+      const grid = pattern.grid || pattern;
 
       // Search if pattern already exists
       var alreadyExists = false;
       for (let newID in newPatterns) {
-        if (gridsEqual(pattern.grid, newPatterns[newID])) {
+        if (gridsEqual(grid, newPatterns[newID])) {
           alreadyExists = true;
           identicalPatterns[id] = newID;
           break;
@@ -436,7 +504,7 @@ export default () => {
       }
 
       // If not, add it to the list
-      if (!alreadyExists) newPatterns[id] = pattern.grid;
+      if (!alreadyExists) newPatterns[id] = grid;
     }
 
     // Merge rows in relations table
@@ -444,18 +512,18 @@ export default () => {
       const newID = identicalPatterns[oldID];
 
       for (let dir = 0; dir < 6; dir++) {
-        relations[newID][dir] = relations[newID][dir].concat(
-          relations[oldID][dir]
+        _relations[newID][dir] = _relations[newID][dir].concat(
+          _relations[oldID][dir]
         );
       }
 
-      delete relations[oldID];
+      delete _relations[oldID];
     }
 
     // Update references in relations table
-    for (let rowID in relations) {
+    for (let rowID in _relations) {
       for (let dir = 0; dir < 6; dir++) {
-        const ids = relations[rowID][dir];
+        const ids = _relations[rowID][dir];
 
         // Update references
         for (let i = 0; i < ids.length; i++) {
@@ -464,12 +532,12 @@ export default () => {
         }
 
         // Remove duplicates
-        relations[rowID][dir] = Array.from(new Set(ids));
+        _relations[rowID][dir] = Array.from(new Set(ids));
       }
     }
 
     // Update patterns
-    patterns = newPatterns;
+    return newPatterns;
   }
 
   /// Creates the output array containing patterns and states

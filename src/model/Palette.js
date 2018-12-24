@@ -7,10 +7,10 @@ class Palette {
   allowYRotation;
 
   // Positives examples
-  positives; // array of 3d array of boxes
+  positives; // array of Sources
 
   // Negatives examples
-  negatives; // array of 3d array of boxes
+  negatives; // array of Sources
 
   constructor(arg) {
     // Default constructor
@@ -18,7 +18,7 @@ class Palette {
       this.N = 3;
       this.sizeFactor = 10;
       this.allowYRotation = false;
-      this.positives = [Models.basicBuilding(), Models.complexBuilding()];
+      this.positives = [];
       this.negatives = [];
       return;
     }
@@ -29,26 +29,10 @@ class Palette {
     this.allowYRotation = arg.allowYRotation;
 
     // Positives (copy)
-    this.positives = arg.positives.map(matrix => this.copyMatrix(matrix));
+    this.positives = arg.positives.map(src => src.clone());
 
     // Negatives (copy)
-    this.negatives = arg.negatives.map(matrix => this.copyMatrix(matrix));
-  }
-
-  copyMatrix(matrix) {
-    let copy = Array(matrix.length);
-
-    for (let x = 0; x < matrix.length; x++) {
-      copy[x] = Array(matrix[x].length);
-      for (let y = 0; y < matrix[x].length; y++) {
-        copy[x][y] = Array(matrix[x][y].length);
-        for (let z = 0; z < matrix[x][y].length; z++) {
-          copy[x][y][z] = matrix[x][y][z];
-        }
-      }
-    }
-
-    return copy;
+    this.negatives = arg.negatives.map(src => src.clone());
   }
 }
 

@@ -18,7 +18,6 @@ class ToolbarComponent extends Component {
   }
 
   componentDidMount() {
-    console.log("Mount");
     this.setState({ palette: this.props.palette });
   }
 
@@ -109,47 +108,92 @@ class ToolbarComponent extends Component {
             />
           </div>
 
-          <div className="Checkbox">
-            <input
-              type="checkbox"
-              id="allowYRotationCheckbox"
-              disabled={this.props.currentState !== "new"}
-            />
-            <h3>Allow y rotation</h3>
-          </div>
-
           <div>
-            <div>
+            <div className="ListHeader">
               <h3>Positives</h3>
-              <button onClick={() => this.props.openEditor(null)}>Add</button>
+              <button
+                className="AddButton"
+                onClick={() =>
+                  this.props.openEditor(
+                    null,
+                    this.editorCallBack(null, "positives")
+                  )
+                }
+              >
+                <i className="fas fa-plus-circle" />
+              </button>
             </div>
 
-            {this.state.palette.positives.map((matrix, index) => (
-              <StaticSceneComponent
-                className="StaticScene"
-                key={index}
-                matrix={matrix}
-              />
-            ))}
+            {this.displayMatrices(this.state.palette.positives)}
           </div>
 
           <div>
-            <div>
+            <div className="ListHeader">
               <h3>Negatives</h3>
-              <button onClick={() => this.props.openEditor(null)}>Add</button>
+              <button
+                className="AddButton"
+                onClick={() =>
+                  this.props.openEditor(
+                    null,
+                    this.editorCallBack(null, "negatives")
+                  )
+                }
+              >
+                <i className="fas fa-plus-circle" />
+              </button>
             </div>
 
-            {this.state.palette.negatives.map((matrix, index) => (
-              <StaticSceneComponent
-                className="StaticScene"
-                key={index}
-                matrix={matrix}
-              />
-            ))}
+            {this.displayMatrices(this.state.palette.negatives)}
           </div>
         </div>
       </div>
     );
+  }
+
+  /// Displays an array of matrices
+  displayMatrices(list) {
+    return list.map((src, index) => (
+      <div key={index}>
+        <div
+          className="Snapshot"
+          style={{ backgroundImage: `url(${src.snapshot})` }}
+        >
+          <button
+            className="DeleteButton"
+            onClick={() => {
+              list.splice(index, 1);
+              this.forceUpdate();
+            }}
+          >
+            <i className="fas fa-trash-alt" />
+          </button>
+          <button
+            className="EditButton"
+            onClick={() => {
+              this.props.openEditor(
+                src.matrix,
+                this.editorCallBack(index, "positives")
+              );
+            }}
+          >
+            <i className="fas fa-pencil-alt" />
+          </button>
+        </div>
+        <div className="Checkbox">
+          <input
+            type="checkbox"
+            id="allowYRotationCheckbox"
+            disabled={this.props.currentState !== "new"}
+            checked={src.allowYRotation}
+            onChange={event => {
+              src.allowYRotation = event.target.checked;
+              this.forceUpdate();
+            }}
+          />
+          <h3>Allow y rotation</h3>
+        </div>
+      </div>
+    ));
   }
 
   /// Start button was pressed
@@ -180,6 +224,25 @@ class ToolbarComponent extends Component {
 
   intOrDefault(value, value_default) {
     return isNaN(value) || value === "" ? value_default : parseInt(value);
+  }
+
+  // Creates callback function depending on the situation
+  editorCallBack(index, arrayID) {
+    const { negatives, positives } = this.state.palette;
+    const arrayRef = arrayID === "negatives" ? negatives : positives;
+
+    // Add new
+    if (index === null) {
+      return src => {
+        arrayRef.push(src);
+        this.forceUpdate();
+      };
+    } else {
+      return src => {
+        arrayRef[index] = src;
+        this.forceUpdate();
+      };
+    }
   }
 }
 

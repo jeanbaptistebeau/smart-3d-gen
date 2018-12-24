@@ -29,16 +29,19 @@
   z-index: 100;
   padding: 15px;
   box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.14), 0px 4px 8px rgba(0, 0, 0, 0.28);
-  transition-property: transform, opacity;
+  /* transition-property: transform, opacity;
   transition-timing-function: ease;
-  transition-duration: 0.5s;
+  transition-duration: 0.5s; */
+  transition: transform 0.5s, opacity 0.5s, visibility 0.5s;
   opacity: 0;
   transform: scale(0.7);
+  visibility: hidden;
 }
 
 :local(.window[visible="true"]) {
   opacity: 1;
   transform: scale(1);
+  visibility: visible;
 }
 
 :local(.navbar) {
@@ -51,6 +54,10 @@
   border: none;
   font-size: 1.5em;
   cursor: pointer;
+}
+
+:local(.buttons:focus) {
+  outline: none;
 }
 
 :local(.mainWindow) {

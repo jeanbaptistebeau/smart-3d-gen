@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import * as THREE from "three";
 import { sceneHelper } from "3d/SceneHelper.js";
+import Source from "../../model/Source";
 
 const OrbitControls = require("three-orbit-controls")(THREE);
 
@@ -10,6 +11,7 @@ class EditableSceneComponent extends Component {
   allMeshes = [];
   isShiftDown = false;
   onMouseDownPosition;
+  objectHovered = null;
 
   /******************* LIFECYCLE METHODS *******************/
 
@@ -40,7 +42,10 @@ class EditableSceneComponent extends Component {
     document.addEventListener("keyup", e => this.onKeyUp(e), false);
 
     // Renderer
-    this.renderer = new THREE.WebGLRenderer({ antialias: false });
+    this.renderer = new THREE.WebGLRenderer({
+      antialias: false,
+      preserveDrawingBuffer: true
+    });
     this.renderer.setClearColor("#1A1B25");
     this.renderer.setSize(width, height);
     this.mount.appendChild(this.renderer.domElement);
@@ -57,17 +62,18 @@ class EditableSceneComponent extends Component {
     this.controls.maxPolarAngle = Math.PI / 2;
 
     // Build
-    this.buildScene();
+    this.buildScene(null);
 
     // Render
     this.renderScene();
   }
 
-  buildScene() {
-    const { matrix } = this.props;
+  buildScene(matrix) {
+    console.log("Build", matrix);
 
     // Scene
     this.scene = new THREE.Scene();
+    this.allMeshes = [];
 
     // Size
     let size = { width: 20, height: 20, depth: 20 };
@@ -103,8 +109,8 @@ class EditableSceneComponent extends Component {
     this.onMouseDownPosition = new THREE.Vector2();
 
     // Grid helper
-    var gridHelper = new THREE.GridHelper(20, 1);
-    this.scene.add(gridHelper);
+    var grid = sceneHelper.grid();
+    this.scene.add(grid);
 
     // Wireframe
     // this.scene.add(sceneHelper.wireframe());
@@ -127,7 +133,9 @@ class EditableSceneComponent extends Component {
         for (var z = 0; z < size.depth; z++) {
           stateMatrix[x][y][z] = -1;
           if (matrix !== null && matrix !== undefined) {
-            stateMatrix[x][y][z] = matrix[x][y][z];
+            const v = matrix[x][y][z];
+            stateMatrix[x][y][z] = v;
+            if (v !== -1) this.addBlock({ x: x, y: y, z: z }, v);
           }
         }
       }
@@ -137,11 +145,7 @@ class EditableSceneComponent extends Component {
     this.state.matrix = stateMatrix;
   }
 
-  componentDidUpdate(prevProps) {
-    if (prevProps.matrix !== this.props.matrix) {
-      this.buildScene();
-    }
-
+  componentDidUpdate() {
     this.renderScene();
   }
 
@@ -159,12 +163,22 @@ class EditableSceneComponent extends Component {
     // Prevent default behavior
     event.preventDefault();
 
+    // Update brush
+    this.brush.visible = !this.isShiftDown;
+
     // Get intersect
     const intersect = this.getIntersect(event);
 
     if (intersect) {
-      const position = this.positionFromIntersect(intersect);
-      this.moveBrush(position);
+      if (this.isShiftDown) {
+        this.updateObjectHovered(intersect.object);
+      } else {
+        this.updateObjectHovered(null);
+
+        const position = this.positionFromIntersect(intersect);
+        const hashPos = this.hashPositionFrom(position);
+        this.moveBrush(hashPos);
+      }
     }
 
     this.renderScene();
@@ -192,8 +206,15 @@ class EditableSceneComponent extends Component {
     const intersect = this.getIntersect(event);
 
     if (intersect) {
-      const position = this.positionFromIntersect(intersect);
-      this.addBlock(position);
+      if (this.isShiftDown) {
+        if (intersect.object != this.allMeshes[0]) {
+          this.removeBlock(intersect.object);
+        }
+      } else {
+        const position = this.positionFromIntersect(intersect);
+        const hashPos = this.hashPositionFrom(position);
+        this.addBlock(hashPos);
+      }
     }
 
     this.renderScene();
@@ -203,6 +224,9 @@ class EditableSceneComponent extends Component {
     switch (event.keyCode) {
       case 16:
         this.isShiftDown = false;
+        break;
+      case 80:
+        this.setState({ snapshot: this.takeSnapshot() });
         break;
     }
   }
@@ -257,6 +281,18 @@ class EditableSceneComponent extends Component {
     return position;
   }
 
+  updateObjectHovered(object) {
+    if (this.objectHovered) {
+      this.objectHovered.material.opacity = 1;
+      this.objectHovered = null;
+    }
+
+    if (object) {
+      this.objectHovered = object;
+      this.objectHovered.material.opacity = 0.5;
+    }
+  }
+
   // These methods assume that UNIT in SceneHelper is 1 (size of each voxel)
 
   hashPositionFrom(scenePosition) {
@@ -267,9 +303,7 @@ class EditableSceneComponent extends Component {
     };
   }
 
-  moveBrush(position) {
-    const hashPos = this.hashPositionFrom(position);
-
+  moveBrush(hashPos) {
     sceneHelper.moveVoxelToPosition(
       this.brush,
       hashPos.x,
@@ -278,23 +312,34 @@ class EditableSceneComponent extends Component {
     );
   }
 
-  addBlock(position) {
-    const hashPos = this.hashPositionFrom(position);
+  addBlock(hashPos, value) {
+    const { matrix } = this.state;
+    const voxelColor = value || this.props.brushColor;
 
-    const color = parseInt(this.props.brushColor.replace("#", "0x"));
+    if (
+      hashPos.x >= matrix.length ||
+      hashPos.y >= matrix[0].length ||
+      hashPos.z >= matrix[0][0].length ||
+      hashPos.x < 0 ||
+      hashPos.y < 0 ||
+      hashPos.z < 0
+    ) {
+      return;
+    }
 
     let voxel = sceneHelper.voxelMesh(
       hashPos.x,
       hashPos.y,
       hashPos.z,
-      this.props.brushColor
+      voxelColor
     );
 
+    voxel.material.transparent = true;
     voxel.hashPos = hashPos;
 
     this.scene.add(voxel);
     this.allMeshes.push(voxel);
-    this.state.matrix[hashPos.x][hashPos.y][hashPos.z] = this.props.brushColor;
+    matrix[hashPos.x][hashPos.y][hashPos.z] = voxelColor;
   }
 
   removeBlock(block) {
@@ -306,6 +351,32 @@ class EditableSceneComponent extends Component {
     }
 
     this.state.matrix[block.hashPos.x][block.hashPos.y][block.hashPos.z] = -1;
+  }
+
+  /// Takes a snapshot of the scene
+  takeSnapshot() {
+    // Reset camera
+    const cPos = sceneHelper.cameraPosition.clone().multiplyScalar(0.6);
+    this.camera.position.set(cPos.x, cPos.y, cPos.z);
+    this.camera.lookAt(sceneHelper.center);
+
+    // Hide brush
+    this.brush.visible = false;
+
+    // Render scene before snapshooting
+    this.renderScene();
+
+    // Take and return snapshot
+    return this.renderer.domElement.toDataURL();
+  }
+
+  /// Saves the whole input as a source object
+  saveSource() {
+    let arg = { allowYRotation: false };
+    arg.snapshot = this.takeSnapshot();
+    arg.matrix = this.state.matrix;
+
+    return new Source(arg);
   }
 }
 

@@ -42,8 +42,6 @@ class App extends Component {
     this.state.currentPalette = new Palette();
     this.state.currentIndex = null;
     this.state.currentState = "new";
-
-    console.log("Initial palette", this.state.currentPalette);
   }
 
   // Handles messages received from web worker
@@ -70,15 +68,11 @@ class App extends Component {
   render() {
     return (
       <div className="App">
-        <EditorComponent className="Editor" ref={ref => (this.editor = ref)} />
+        <EditorComponent ref={ref => (this.editor = ref)} />
 
         <ToolbarComponent
           className="Toolbar"
-          palette={
-            this.state.currentIndex != null
-              ? this.currentArtwork().palette
-              : this.state.currentPalette
-          }
+          palette={this.state.currentPalette}
           currentState={this.state.currentState}
           startWFC={this.startWFC}
           cancelWFC={this.cancelWFC}
@@ -120,7 +114,7 @@ class App extends Component {
 
     this.state.allArtworks.push(artwork);
     this.setState({
-      currentPalette: null,
+      currentPalette: palette,
       currentIndex: this.state.allArtworks.length - 1,
       currentState: "creating"
     });
@@ -152,8 +146,8 @@ class App extends Component {
   }
 
   // Opens editor with given matrix (or none)
-  openEditorWithMatrix(matrix) {
-    this.editor.show();
+  openEditorWithMatrix(matrix, callBack) {
+    this.editor.show(matrix, callBack);
   }
 }
 
@@ -167,7 +161,8 @@ var message = {
       _N: artwork.palette.N,
       _sizeFactor: artwork.palette.sizeFactor,
       allowYRotation: artwork.palette.allowYRotation,
-      src: artwork.palette.positives[0]
+      positives: artwork.palette.positives,
+      negatives: artwork.palette.negatives
     }
   }),
   cancel: () => ({ type: "cancel" })
