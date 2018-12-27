@@ -75,6 +75,7 @@ export var sceneHelper = {
     );
     const material = new THREE.MeshLambertMaterial({ color: color });
     const cube = new THREE.Mesh(geometry, material);
+    cube.name = `${x}/${y}/${z}`;
 
     this.moveVoxelToPosition(cube, x, y, z);
     return cube;
@@ -92,6 +93,7 @@ export var sceneHelper = {
     material.opacity = 0.2 + (1 - uncertainty) * 0.6;
 
     const cube = new THREE.Mesh(geometry, material);
+    cube.name = `undefined:${origin.x}/${origin.y}/${origin.z}`;
 
     const offset = size * 0.25 * UNIT;
     cube.position.set(
@@ -133,9 +135,12 @@ export var sceneHelper = {
 
   // Creates ground for the world
   ground: function() {
-    const geometry = new THREE.BoxGeometry(this.width, UNIT, this.depth);
+    const geometry = new THREE.BufferGeometry().fromGeometry(
+      new THREE.BoxGeometry(this.width, UNIT, this.depth)
+    );
     const material = new THREE.MeshLambertMaterial({ color: "#ECEBE4" });
     const ground = new THREE.Mesh(geometry, material);
+    ground.name = "ground";
     ground.position.set(0, -UNIT, 0);
     this.moveToCorner(ground, this.width, UNIT, this.depth);
 

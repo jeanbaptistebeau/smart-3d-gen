@@ -2,16 +2,10 @@ import React, { Component } from "react";
 import SceneComponent from "./SceneComponent";
 
 import * as THREE from "three";
-import "../3d/OBJExporter";
+import { exportOBJ } from "../3d/OBJExporter";
 
 class ArtworkComponent extends Component {
   allScenes = {};
-
-  constructor() {
-    super();
-
-    this.download = this.download.bind(this);
-  }
 
   render() {
     const { allArtworks, currentIndex } = this.props;
@@ -36,30 +30,13 @@ class ArtworkComponent extends Component {
           className="ExportButton"
           onClick={() => {
             const scene = this.allScenes[this.props.currentIndex];
-            console.log(scene);
-            var exporter = new THREE.OBJExporter();
-            var result = exporter.parse(scene);
-
-            this.download(result, "scene.obj");
+            exportOBJ(scene);
           }}
         >
           <i className="fas fa-share-square" />
         </button>
       </div>
     );
-  }
-
-  download(data, filename) {
-    var element = document.createElement("a");
-    element.setAttribute("href", "data:text/plain;charset=utf-8," + data);
-    element.setAttribute("download", filename);
-
-    element.style.display = "none";
-    document.body.appendChild(element);
-
-    element.click();
-
-    document.body.removeChild(element);
   }
 }
 
