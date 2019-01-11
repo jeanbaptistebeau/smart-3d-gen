@@ -60,6 +60,24 @@
   outline: none;
 }
 
+:local(.sizeEditor) {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}
+
+:local(.sizeEditor h3) {
+  font-family: "Open Sans", sans-serif;
+  font-size: 1.1em;
+  margin: auto 30px;
+}
+
+:local(.sizeEditor button) {
+  font-size: 1em;
+  color: #ddd;
+}
+
 :local(.mainWindow) {
   flex-grow: 1;
   display: flex;

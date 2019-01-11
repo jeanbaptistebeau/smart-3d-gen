@@ -160,7 +160,7 @@ var message = {
     body: {
       _N: artwork.palette.N,
       _sizeFactor: artwork.palette.sizeFactor,
-      allowYRotation: artwork.palette.allowYRotation,
+      _groundMagnetism: artwork.palette.groundMagnetism,
       positives: artwork.palette.positives,
       negatives: artwork.palette.negatives
     }

@@ -108,6 +108,20 @@ class ToolbarComponent extends Component {
             />
           </div>
 
+          <div className="Checkbox">
+            <input
+              type="checkbox"
+              id="groundMagnetismCheckbox"
+              disabled={this.props.currentState !== "new"}
+              checked={this.state.palette.groundMagnetism}
+              onChange={event => {
+                this.state.palette.groundMagnetism = event.target.checked;
+                this.forceUpdate();
+              }}
+            />
+            <h3>Ground Magnetism</h3>
+          </div>
+
           <div>
             <div className="ListHeader">
               <h3>Positives</h3>
@@ -116,7 +130,7 @@ class ToolbarComponent extends Component {
                 onClick={() =>
                   this.props.openEditor(
                     null,
-                    this.editorCallBack(null, "positives")
+                    this.editorCallBack(null, this.state.palette.positives)
                   )
                 }
               >
@@ -135,7 +149,7 @@ class ToolbarComponent extends Component {
                 onClick={() =>
                   this.props.openEditor(
                     null,
-                    this.editorCallBack(null, "negatives")
+                    this.editorCallBack(null, this.state.palette.negatives)
                   )
                 }
               >
@@ -172,7 +186,7 @@ class ToolbarComponent extends Component {
             onClick={() => {
               this.props.openEditor(
                 src.matrix,
-                this.editorCallBack(index, "positives")
+                this.editorCallBack(index, list)
               );
             }}
           >
@@ -227,10 +241,7 @@ class ToolbarComponent extends Component {
   }
 
   // Creates callback function depending on the situation
-  editorCallBack(index, arrayID) {
-    const { negatives, positives } = this.state.palette;
-    const arrayRef = arrayID === "negatives" ? negatives : positives;
-
+  editorCallBack(index, arrayRef) {
     // Add new
     if (index === null) {
       return src => {

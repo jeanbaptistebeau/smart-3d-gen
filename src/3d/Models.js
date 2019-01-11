@@ -12,6 +12,24 @@ export var Models = {
     return drawer.matrix;
   },
 
+  hairlineTower: function() {
+    var drawer = new VoxelDrawer(18, 18, 18);
+
+    drawer.draw(6, 6, 0, 1, 6, 6, 0x3498db);
+    drawer.draw(6, 6, 2, 5, 6, 6, 0x95a5a6);
+    drawer.draw(6, 6, 6, 6, 6, 6, 0x2c3e50);
+
+    return drawer.matrix;
+  },
+
+  ground: function() {
+    var drawer = new VoxelDrawer(18, 18, 18);
+
+    drawer.draw(0, 17, 0, 1, 0, 17, 0x34495e);
+
+    return drawer.matrix;
+  },
+
   complexBuilding: function() {
     var drawer = new VoxelDrawer(31, 31, 31);
 

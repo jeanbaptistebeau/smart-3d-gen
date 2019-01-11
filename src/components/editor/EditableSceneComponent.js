@@ -76,7 +76,7 @@ class EditableSceneComponent extends Component {
     this.allMeshes = [];
 
     // Size
-    let size = { width: 20, height: 20, depth: 20 };
+    let size = { width: 10, height: 10, depth: 10 };
     if (matrix !== null && matrix !== undefined) {
       size.width = matrix.length;
       size.height = matrix[0].length;
@@ -145,7 +145,8 @@ class EditableSceneComponent extends Component {
     this.state.matrix = stateMatrix;
   }
 
-  componentDidUpdate() {
+  componentDidUpdate(oldProps) {
+    if (oldProps.size !== this.props.size) this.changeSize(this.props.size);
     this.renderScene();
   }
 
@@ -351,6 +352,33 @@ class EditableSceneComponent extends Component {
     }
 
     this.state.matrix[block.hashPos.x][block.hashPos.y][block.hashPos.z] = -1;
+  }
+
+  /// Changes the size of the matrix
+  changeSize(size) {
+    console.log("Change size");
+    // Matrix
+    let stateMatrix = Array(size);
+    for (var x = 0; x < size; x++) {
+      stateMatrix[x] = Array(size);
+      for (var y = 0; y < size; y++) {
+        stateMatrix[x][y] = Array(size);
+        for (var z = 0; z < size; z++) {
+          stateMatrix[x][y][z] = -1;
+
+          if (this.state.matrix.length > x) {
+            if (this.state.matrix[x].length > y) {
+              if (this.state.matrix[x][y].length > z) {
+                stateMatrix[x][y][z] = this.state.matrix[x][y][z];
+              }
+            }
+          }
+        }
+      }
+    }
+
+    // Build the scene with the matrix
+    this.buildScene(stateMatrix);
   }
 
   /// Takes a snapshot of the scene

@@ -30,7 +30,9 @@ class ArtworkComponent extends Component {
           className="ExportButton"
           onClick={() => {
             const scene = this.allScenes[this.props.currentIndex];
-            exportOBJ(scene);
+            if (scene !== undefined && scene != null) {
+              exportOBJ(scene);
+            }
           }}
         >
           <i className="fas fa-share-square" />

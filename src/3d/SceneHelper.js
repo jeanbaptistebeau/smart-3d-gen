@@ -81,16 +81,38 @@ export var sceneHelper = {
     return cube;
   },
 
+  // Creates a contradiction mesh at the given coordinates
+  contradictionMesh: function(origin, size) {
+    const realSize = size * 0.7 * UNIT;
+    const geometry = new THREE.BoxGeometry(realSize, realSize, realSize);
+
+    var material = new THREE.MeshLambertMaterial({ color: 0xdf2029 });
+    material.transparent = true;
+    material.opacity = 0.8;
+
+    const cube = new THREE.Mesh(geometry, material);
+    cube.name = `contradiction:${origin.x}/${origin.y}/${origin.z}`;
+
+    const offset = size * 0.15 * UNIT;
+    cube.position.set(
+      origin.x * UNIT + offset,
+      origin.y * UNIT + offset,
+      origin.z * UNIT + offset
+    );
+    this.moveToCorner(cube, realSize, realSize, realSize);
+    return cube;
+  },
+
   // Creates an undefined mesh at the given coordinates
   undefinedMesh: function(origin, size, uncertainty) {
     const realSize = size * 0.5 * UNIT;
     const geometry = new THREE.BoxGeometry(realSize, realSize, realSize);
 
-    const color = uncertainty === 1 ? 0x000000 : 0xff9505;
+    // const color = uncertainty === 1 ? 0x000000 : 0xff9505;
 
-    var material = new THREE.MeshLambertMaterial({ color: color });
+    var material = new THREE.MeshLambertMaterial({ color: 0x000 });
     material.transparent = true;
-    material.opacity = 0.2 + (1 - uncertainty) * 0.6;
+    material.opacity = 0.05 + (1 - uncertainty) * 0.6;
 
     const cube = new THREE.Mesh(geometry, material);
     cube.name = `undefined:${origin.x}/${origin.y}/${origin.z}`;

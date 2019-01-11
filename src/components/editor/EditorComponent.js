@@ -6,14 +6,15 @@ import styles from "./Editor.css";
 class EditorComponent extends Component {
   constructor(props) {
     super(props);
-    this.state = { isVisible: false, brushColorIndex: 0 };
+    this.state = { isVisible: false, brushColorIndex: 0, size: 10 };
   }
 
   show(matrix, saveCallBack) {
     this.sceneComponent.buildScene(matrix);
     this.setState({
       isVisible: true,
-      saveCallBack: saveCallBack
+      saveCallBack: saveCallBack,
+      size: matrix !== undefined && matrix !== null ? matrix.length : 10
     });
   }
 
@@ -51,6 +52,21 @@ class EditorComponent extends Component {
             <button onClick={() => this.hide(false)} className={styles.buttons}>
               <i className="far fa-times-circle" />
             </button>
+            <div className={styles.sizeEditor}>
+              <button
+                onClick={() => this.setState({ size: this.state.size - 1 })}
+                className={styles.buttons}
+              >
+                <i className="fas fa-minus" />
+              </button>
+              <h3>Size: {this.state.size}</h3>
+              <button
+                onClick={() => this.setState({ size: this.state.size + 1 })}
+                className={styles.buttons}
+              >
+                <i className="fas fa-plus" />
+              </button>
+            </div>
             <button onClick={() => this.hide(true)} className={styles.buttons}>
               <i className="far fa-check-circle" />
             </button>
@@ -62,6 +78,7 @@ class EditorComponent extends Component {
                 this.sceneComponent = sc;
               }}
               brushColor={COLORS[this.state.brushColorIndex]}
+              size={this.state.size}
             />
             <div className={styles.colorPalette}>{colorCircles}</div>
           </div>

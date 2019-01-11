@@ -90,7 +90,7 @@ class SceneComponent extends Component {
     this.scene.add(amb);
 
     // Wireframe
-    this.scene.add(sceneHelper.wireframe());
+    // this.scene.add(sceneHelper.wireframe());
 
     // Ground
     const ground = sceneHelper.ground();
@@ -154,7 +154,11 @@ class SceneComponent extends Component {
 
     if (box.voxels === null) {
       if (this.drawUndefined) {
-        return [sceneHelper.undefinedMesh(origin, N, box.uncertainty)];
+        if (box.uncertainty === 0) {
+          return [sceneHelper.contradictionMesh(origin, N)];
+        } else {
+          return [sceneHelper.undefinedMesh(origin, N, box.uncertainty)];
+        }
       } else {
         return [];
       }

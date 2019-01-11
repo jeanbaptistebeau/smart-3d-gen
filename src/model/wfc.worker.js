@@ -2,7 +2,8 @@ export default () => {
   // var width, height, depth;
   var N;
   var sizeFactor;
-  var patterns, relations;
+  var groundMagnetism;
+  var patterns, relations, negativePatterns, negativeRelations;
 
   var shouldContinue = true;
 
@@ -30,13 +31,16 @@ export default () => {
   };
 
   /// Start function
-  function start({ _N, _sizeFactor, allowYRotation, positives, negatives }) {
+  function start({ _N, _sizeFactor, _groundMagnetism, positives, negatives }) {
     N = _N;
     sizeFactor = _sizeFactor;
+    groundMagnetism = _groundMagnetism;
     shouldContinue = true;
 
-    patterns = {};
-    relations = {};
+    patterns = {}; // contains ALL patterns
+    relations = {}; // contains only positives patterns
+    negativeRelations = {}; // contains only negatives patterns
+    negativePatterns = {}; // contains only negatives patterns
 
     let patternCounter = 0;
 
@@ -48,25 +52,42 @@ export default () => {
 
     let matrices = [];
 
-    // FOR EACH SOURCE
+    // FOR EACH POSITIVE SOURCE
     for (let i = 0; i < positives.length; i++) {
       const src = positives[i].matrix;
       const allowYRotation = positives[i].allowYRotation;
 
-      matrices.push(src);
+      matrices.push({ src: src, positive: true });
 
       // Add rotations
       if (allowYRotation) {
         const allRotations = getYRotations(src);
         for (let j = 0; j < allRotations.length; j++) {
-          matrices.push(allRotations[j]);
+          matrices.push({ src: allRotations[j], positive: true });
+        }
+      }
+    }
+
+    // FOR EACH NEGATIVE SOURCE
+    for (let i = 0; i < negatives.length; i++) {
+      const src = negatives[i].matrix;
+      const allowYRotation = negatives[i].allowYRotation;
+
+      matrices.push({ src: src, positive: false });
+
+      // Add rotations
+      if (allowYRotation) {
+        const allRotations = getYRotations(src);
+        for (let j = 0; j < allRotations.length; j++) {
+          matrices.push({ src: allRotations[j], positive: false });
         }
       }
     }
 
     // FOR EACH MATRIX
     for (let i = 0; i < matrices.length; i++) {
-      const src = matrices[i];
+      const src = matrices[i].src;
+      const positive = matrices[i].positive;
 
       // Creates patterns from source
       let { srcPatterns, counterEnd } = createPatterns(src, patternCounter);
@@ -84,23 +105,43 @@ export default () => {
       }
 
       // Merge local identical patterns (in same source)
-      srcPatterns = mergePatternsAndRelations(srcPatterns, srcRelations);
+      srcPatterns = mergePatternsAndRelations(
+        srcPatterns,
+        new Set([srcRelations])
+      );
 
-      // Append to global array
+      // Process depending on positive or negative
       Object.assign(patterns, srcPatterns);
-      Object.assign(relations, srcRelations);
+      if (positive) {
+        Object.assign(relations, srcRelations);
+      } else {
+        Object.assign(negativePatterns, srcPatterns);
+        Object.assign(negativeRelations, srcRelations);
+      }
 
       if (shouldContinue === false) {
         return;
       }
 
-      console.log(Object.keys(srcPatterns).length, "local patterns.");
+      console.log(
+        Object.keys(srcPatterns).length,
+        positive ? "local" : "negative",
+        " patterns."
+      );
     }
 
     // Merge global arrays (between different sources)
-    patterns = mergePatternsAndRelations(patterns, relations);
+    patterns = mergePatternsAndRelations(
+      patterns,
+      new Set([relations, negativeRelations])
+    );
 
     console.log(Object.keys(patterns).length, "patterns in total.");
+
+    console.log(patterns);
+    console.log(relations);
+    console.log(negativeRelations);
+    console.log(negativePatterns);
 
     // Creates output array representing tiles with states
     var tiles = createOutputArray();
@@ -112,8 +153,8 @@ export default () => {
   }
 
   /// Main loop
-  function waveFunctionCollapse(tiles) {
-    const time_start = +new Date();
+  function waveFunctionCollapse(tiles, last_rendering_time) {
+    // const time_start = +new Date();
 
     if (shouldContinue === false) {
       return;
@@ -127,6 +168,7 @@ export default () => {
 
     // All tiles collapsed
     if (minEntropyTile === null) {
+      console.log(tiles);
       this.postMessage(message.finished());
       return;
     }
@@ -152,8 +194,8 @@ export default () => {
     }
 
     // If contradiction in propagation
-    if (result === false) {
-      // console.log("Contradiction at ", minEntropyTile.position);
+    if (result === null) {
+      console.log("Contradiction at ", minEntropyTile.position);
 
       // Restore backup
       minEntropyTile.state = backupState;
@@ -166,12 +208,19 @@ export default () => {
 
       // If tile is collapsed after forbiding this collapsing, propagate
       if (tileCollapsed(minEntropyTile)) {
-        // console.log("Forbiding this assignment caused collapsing.");
+        console.log("Forbiding this assignment caused collapsing.");
         let secondResult = propagate(minEntropyTile, tiles, tilesToRender);
-        if (!secondResult) {
-          // console.log(
-          //   "Fatal error. The current state of tiles doesn't have solution. Would need to cancel the last collapsing."
-          // );
+        if (secondResult === null) {
+          // Forbid this collapsing
+          let id = remainingPatternID(minEntropyTile);
+          minEntropyTile.state[id] = false;
+
+          // Render this tile only
+          tilesToRender = new Set([minEntropyTile]);
+
+          console.log(
+            "Fatal error. The current state of tiles doesn't have solution. Would need to cancel the last collapsing."
+          );
         }
       }
     }
@@ -180,24 +229,37 @@ export default () => {
       return;
     }
 
-    // Update UI
-    updateUITiles(tilesToRender);
-
-    if (shouldContinue === false) {
-      return;
-    }
-
-    // Compute time difference
-    const time_end = +new Date();
-    const time_diff = time_end - time_start;
-
-    if (time_diff > TIMER_MS) {
-      waveFunctionCollapse(tiles);
+    // If nothing to render, go straight to next step
+    if (tilesToRender.size === 0) {
+      waveFunctionCollapse(tiles, last_rendering_time);
     } else {
-      setTimeout(function() {
-        waveFunctionCollapse(tiles);
-      }, TIMER_MS - time_diff);
+      const time_now = +new Date();
+      const since_last_render = time_now - last_rendering_time;
+
+      if (since_last_render > TIMER_MS) {
+        updateUITiles(tilesToRender);
+        const rendering_time = +new Date();
+        waveFunctionCollapse(tiles, rendering_time);
+      } else {
+        setTimeout(function() {
+          updateUITiles(tilesToRender);
+          const rendering_time = +new Date();
+          waveFunctionCollapse(tiles, rendering_time);
+        }, TIMER_MS - since_last_render);
+      }
     }
+
+    // // Compute time difference
+    // const time_end = +new Date();
+    // const time_diff = time_end - time_start;
+    //
+    // if (time_diff > TIMER_MS) {
+    //   waveFunctionCollapse(tiles);
+    // } else {
+    //   setTimeout(function() {
+    //     waveFunctionCollapse(tiles);
+    //   }, TIMER_MS - time_diff);
+    // }
   }
 
   // ####################################################
@@ -212,9 +274,13 @@ export default () => {
       for (let y = 0; y < tiles[x].length; y++) {
         for (let z = 0; z < tiles[x][y].length; z++) {
           const tile = tiles[x][y][z];
-          const entropy = Object.values(tile.state).filter(Boolean).length;
+          const allowedPatterns = Object.values(tile.state).filter(Boolean)
+            .length;
+          let entropy = allowedPatterns;
 
-          if (entropy > 1) {
+          if (groundMagnetism) entropy += tile.position.y / tiles[x].length;
+
+          if (allowedPatterns > 1) {
             if (entropy === minEntropy) {
               minEntropyTiles.push(tile);
             } else if (entropy < minEntropy) {
@@ -268,41 +334,58 @@ export default () => {
       const nextTile = neighbour(pos, tiles, dir);
       if (nextTile === undefined) continue;
 
-      // If neighbour already collapsed, ignore it
-      if (tileCollapsed(nextTile)) continue;
+      // This prevents propagation loops
+      if (tilesToRender.has(nextTile)) continue;
+
+      // If neighbour already in contradiction, ignore it
+      if (tileContradiction(nextTile)) continue;
+
+      // Store if the tile was collapsed before propagation step
+      const tileWasAlreadyCollapsed = tileCollapsed(nextTile);
 
       const allowedPatternIDs = relations[patternID][dir];
       if (allowedPatternIDs.length === 0) continue; // limit case next to border
 
-      // Backup state
+      // Backup states
       backupStates.push({ tile: nextTile, state: copyState(nextTile.state) });
 
       // Update state of neighbour
       for (let id in nextTile.state) {
         if (!allowedPatternIDs.includes(id)) nextTile.state[id] = false;
+
+        // Negative relations
+        if (patternID in negativeRelations) {
+          const forbiddenPatternIDs = negativeRelations[patternID][dir];
+          if (forbiddenPatternIDs.includes(id)) nextTile.state[id] = false;
+        }
       }
 
       // If tile is in contradiction state, restore backups and step back
       if (tileContradiction(nextTile)) {
         restoreBackups(backupStates);
-        return false;
+        return null;
       }
+
+      // If tile was already collapsed, we don't propagate more in this direction
+      if (tileWasAlreadyCollapsed) continue;
 
       // If neighbour got collapsed now, propagate to other neighbours
       if (tileCollapsed(nextTile)) {
         let result = propagate(nextTile, tiles, tilesToRender);
 
         // If contradiction later on, restore backups and step back
-        if (result === false) {
+        if (result === null) {
           restoreBackups(backupStates);
-          return false;
+          return null;
+        } else {
+          backupStates = backupStates.concat(result);
         }
       } else {
         tilesToRender.add(nextTile);
       }
     }
 
-    return true;
+    return backupStates;
   }
 
   /// Restores states backups if reached a constradiction
@@ -485,7 +568,7 @@ export default () => {
   }
 
   /// Merges identical patterns, i.e with the exact same grid
-  function mergePatternsAndRelations(_patterns, _relations) {
+  function mergePatternsAndRelations(_patterns, _relationsSet) {
     var newPatterns = {};
     var identicalPatterns = {};
 
@@ -507,32 +590,43 @@ export default () => {
       if (!alreadyExists) newPatterns[id] = grid;
     }
 
-    // Merge rows in relations table
-    for (let oldID in identicalPatterns) {
-      const newID = identicalPatterns[oldID];
+    for (let _relations of _relationsSet) {
+      // Merge rows in relations table
+      for (let oldID in identicalPatterns) {
+        const newID = identicalPatterns[oldID];
 
-      for (let dir = 0; dir < 6; dir++) {
-        _relations[newID][dir] = _relations[newID][dir].concat(
-          _relations[oldID][dir]
-        );
-      }
+        // If old id is not in array, nothing to do
+        if (!(oldID in _relations)) continue;
 
-      delete _relations[oldID];
-    }
-
-    // Update references in relations table
-    for (let rowID in _relations) {
-      for (let dir = 0; dir < 6; dir++) {
-        const ids = _relations[rowID][dir];
-
-        // Update references
-        for (let i = 0; i < ids.length; i++) {
-          const id = ids[i];
-          if (id in identicalPatterns) ids[i] = identicalPatterns[id];
+        // Add row if doesn't exists
+        if (!(newID in _relations)) {
+          _relations[newID] = new Array(6);
+          for (let dir = 0; dir < 6; dir++) _relations[newID][dir] = [];
         }
 
-        // Remove duplicates
-        _relations[rowID][dir] = Array.from(new Set(ids));
+        for (let dir = 0; dir < 6; dir++) {
+          _relations[newID][dir] = _relations[newID][dir].concat(
+            _relations[oldID][dir]
+          );
+        }
+
+        delete _relations[oldID];
+      }
+
+      // Update references in relations table
+      for (let rowID in _relations) {
+        for (let dir = 0; dir < 6; dir++) {
+          const ids = _relations[rowID][dir];
+
+          // Update references
+          for (let i = 0; i < ids.length; i++) {
+            const id = ids[i];
+            if (id in identicalPatterns) ids[i] = identicalPatterns[id];
+          }
+
+          // Remove duplicates
+          _relations[rowID][dir] = Array.from(new Set(ids));
+        }
       }
     }
 
@@ -544,14 +638,31 @@ export default () => {
   function createOutputArray() {
     var output = Array(sizeFactor);
 
+    // Identify ground patterns
+    let groundPatterns = new Set();
+    if (groundMagnetism) {
+      for (let id in relations) {
+        if (relations[id][DOWN].length === 0) groundPatterns.add(id);
+      }
+    }
+
+    console.log(groundPatterns.size, "Ground patterns");
+
     for (let x = 0; x < sizeFactor; x++) {
       output[x] = Array(sizeFactor);
       for (let y = 0; y < sizeFactor; y++) {
         output[x][y] = Array(sizeFactor);
         for (let z = 0; z < sizeFactor; z++) {
+          let state = stateArray();
+
+          // Forbid ground patterns above the ground
+          if (y > 0) {
+            for (let id of groundPatterns) state[id] = false;
+          }
+
           output[x][y][z] = {
             position: { x: x, y: y, z: z },
-            state: stateArray(patterns)
+            state: state
           };
         }
       }
@@ -561,10 +672,10 @@ export default () => {
   }
 
   /// Creates state array from patterns
-  function stateArray(patterns) {
+  function stateArray() {
     var state = {};
     for (let id in patterns) {
-      state[id] = true;
+      if (!(id in negativePatterns)) state[id] = true;
     }
 
     return state;
@@ -609,25 +720,13 @@ export default () => {
       var patternID = remainingPatternID(tile);
 
       if (patternID === undefined) {
+        // Uncertain
         uncertainty =
           Object.values(tile.state).filter(Boolean).length /
           Object.values(tile.state).length;
       } else if (patternID === null) {
-        voxels = [];
-
-        // Get voxels
-        for (let x = 0; x < N; x++) {
-          for (let y = 0; y < N; y++) {
-            for (let z = 0; z < N; z++) {
-              voxels.push({
-                x: x,
-                y: y,
-                z: z,
-                value: 0xff0000
-              });
-            }
-          }
-        }
+        // Contradiction
+        uncertainty = 0;
       } else {
         voxels = [];
         const pattern = patterns[patternID];
@@ -690,6 +789,12 @@ export default () => {
   function tileContradiction(tile) {
     return remainingPatternID(tile) === null;
   }
+
+  /// Direction opposites
+  // function opposite(dir) {
+  //   if (dir === 4 || dir === 5) return 9 - dir;
+  //   return (dir + 2) % 4;
+  // }
 
   /// Message creator
   var message = {

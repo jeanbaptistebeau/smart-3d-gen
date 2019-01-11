@@ -118,10 +118,11 @@
 }
 
 .Toolbar .BigButton {
-  margin-top: -35px;
+  margin-top: -25px;
   margin-bottom: 0;
   margin-left: auto;
   margin-right: auto;
+  flex-shrink: 0;
 }
 
 /*********************** SCENES SNAPSHOTS ***********************/
@@ -160,12 +161,12 @@
   right: 0;
 }
 
-.Toolbar .Checkbox {
+.ControlsPanel div .Checkbox {
   margin-top: 5px;
   margin-bottom: 20px;
 }
 
-.Toolbar .Checkbox * {
+.ControlsPanel .Checkbox * {
   display: inline-block;
   margin: 5px;
 }
@@ -179,6 +180,7 @@
   align-items: center;
   padding: 10px 30px;
   overflow-y: scroll;
+  margin-top: -25px;
 }
 
 .ControlsPanel > div {
@@ -281,14 +283,15 @@
 .BigButton {
   background-color: #37718e;
   color: #fff;
-  height: 70px;
+  height: 50px;
   font-family: "Rubik", sans-serif;
   font-weight: 500;
   font-size: 1em;
   letter-spacing: 0.1em;
   width: 66%;
-  border-radius: 30px;
+  border-radius: 25px;
   border: solid 2px #f8f9ff;
+  z-index: 90;
 }
 
 .BigButton[inversed="true"] {

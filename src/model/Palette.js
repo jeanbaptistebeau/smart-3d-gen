@@ -1,10 +1,11 @@
 import { Models } from "../3d/Models.js";
+import Source from "./Source";
 
 class Palette {
   // Parameters
   N;
   sizeFactor;
-  allowYRotation;
+  groundMagnetism;
 
   // Positives examples
   positives; // array of Sources
@@ -17,8 +18,10 @@ class Palette {
     if (arg === undefined || arg === null) {
       this.N = 3;
       this.sizeFactor = 10;
-      this.allowYRotation = false;
-      this.positives = [];
+      this.groundMagnetism = true;
+      this.positives = [
+        new Source({ matrix: Models.ground(), allowYRotation: false })
+      ];
       this.negatives = [];
       return;
     }
@@ -26,7 +29,7 @@ class Palette {
     // Input parameters
     this.N = arg.N;
     this.sizeFactor = arg.sizeFactor;
-    this.allowYRotation = arg.allowYRotation;
+    this.groundMagnetism = arg.groundMagnetism;
 
     // Positives (copy)
     this.positives = arg.positives.map(src => src.clone());
