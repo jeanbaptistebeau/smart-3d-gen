@@ -2,7 +2,8 @@
 
 ### "Dialogic Voxel Synthesis: Generative Design with Exemplar Inputs"
 
-**Jean-Baptiste Beau** | LDM EPFL
+**Jean-Baptiste Beau**
+LDM | EPFL
 
 Developed in JavaScript, using ThreeJS and React.
 
