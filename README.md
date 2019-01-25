@@ -1,6 +1,7 @@
-# Smart 3D Generator
+# WFC Voxel Creator
 
-A project by Jean-Baptiste Beau, in the Media & Design Lab of EPFL.
+_"Dialogic Voxel Synthesis: Generative Design with Exemplar Inputs"_
+Jean-Baptiste Beau, LDM EPFL
 
 Developed in JavaScript, using ThreeJS and React.
 
@@ -32,6 +33,20 @@ The artwork component contains the visualization logic on the remaining part of 
 
 The timeline is above the Artwork component, it contains the versions buttons to navigate between the different creations.
 
-### Editor
+#### Editor
 
 The editor appears when the user either add a new input or modify an existing one. It contains an interactive scene where the user can place and remove blocks, colors buttons to change the brush color, and buttons to change the size of the input.
+
+## Model objects
+
+#### Source.js
+
+A source as an input. It contains a matrix, a snapshot for visualization, and a boolean value indicating if the rotations are allowed for this particular input.
+
+#### Palette.js
+
+A Palette is a set of parameters. It includes all the parameters from the toolbar on the left, as well as all the sources.
+
+#### Artwork.js
+
+An Artwork represents a version of the creation. It contains a palette (parameters) and an output matrix.
