@@ -12,10 +12,23 @@ class EditableSceneComponent extends Component {
   isShiftDown = false;
   onMouseDownPosition;
   objectHovered = null;
+  currentCamera = null;
 
   /******************* LIFECYCLE METHODS *******************/
 
   render() {
+    const cameraButtonStyle = {
+      color: "#333",
+      backgroundColor: "transparent",
+      border: "none",
+      fontSize: "1.5em",
+      cursor: "pointer",
+      position: "absolute",
+      bottom: 0,
+      right: 0,
+      margin: "15px"
+    };
+
     return (
       <div
         className={this.props.className}
@@ -23,7 +36,17 @@ class EditableSceneComponent extends Component {
           this.mount = mount;
         }}
         style={this.props.style}
-      />
+      >
+        <button
+          className="CameraButton"
+          style={cameraButtonStyle}
+          onClick={() => {
+            this.changeCamera();
+          }}
+        >
+          <i className="fas fa-camera" />
+        </button>
+      </div>
     );
   }
 
@@ -52,6 +75,17 @@ class EditableSceneComponent extends Component {
 
     // Camera
     this.camera = new THREE.PerspectiveCamera(50, width / height, 0.1, 1000);
+    this.currentCamera = this.camera;
+
+    // Secondary Camera
+    this.secondaryCamera = new THREE.OrthographicCamera(
+      width / -2,
+      width / 2,
+      height / 2,
+      height / -2,
+      0.1,
+      1000
+    );
 
     // Controls
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
@@ -69,8 +103,6 @@ class EditableSceneComponent extends Component {
   }
 
   buildScene(matrix) {
-    console.log("Build", matrix);
-
     // Scene
     this.scene = new THREE.Scene();
     this.allMeshes = [];
@@ -90,6 +122,12 @@ class EditableSceneComponent extends Component {
     const cPos = sceneHelper.cameraPosition;
     this.camera.position.set(cPos.x, cPos.y, cPos.z);
     this.camera.lookAt(sceneHelper.center);
+
+    // Secondary Camera - Update
+    this.secondaryCamera.position.set(60, 45, 54);
+    this.secondaryCamera.lookAt(sceneHelper.center);
+    this.secondaryCamera.zoom = 12;
+    this.secondaryCamera.updateProjectionMatrix();
 
     // Controls - Update
     this.controls.target = sceneHelper.center;
@@ -145,13 +183,27 @@ class EditableSceneComponent extends Component {
     this.state.matrix = stateMatrix;
   }
 
+  changeCamera() {
+    if (this.currentCamera === this.camera) {
+      this.currentCamera = this.secondaryCamera;
+      this.renderer.setClearColor("#F8F9FF");
+      this.brush.visible = false;
+    } else {
+      this.currentCamera = this.camera;
+      this.renderer.setClearColor("#1A1B25");
+      this.brush.visible = true;
+    }
+
+    this.renderScene();
+  }
+
   componentDidUpdate(oldProps) {
     if (oldProps.size !== this.props.size) this.changeSize(this.props.size);
     this.renderScene();
   }
 
   renderScene() {
-    this.renderer.render(this.scene, this.camera);
+    this.renderer.render(this.scene, this.currentCamera);
   }
 
   componentWillUnmount() {

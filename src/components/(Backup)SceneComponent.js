@@ -6,8 +6,7 @@ const OrbitControls = require("three-orbit-controls")(THREE);
 
 class SceneComponent extends Component {
   sceneBuilted = false;
-  meshes = [];
-  drawUndefined = true;
+  tiles;
   currentCamera = null;
 
   render() {
@@ -113,13 +112,23 @@ class SceneComponent extends Component {
     this.scene.add(ground);
 
     // Meshes
-    this.meshes = Array(sizeFactor);
+    this.tiles = Array(sizeFactor);
     for (var x = 0; x < sizeFactor; x++) {
-      this.meshes[x] = Array(sizeFactor);
+      this.tiles[x] = Array(sizeFactor);
       for (var y = 0; y < sizeFactor; y++) {
-        this.meshes[x][y] = Array(sizeFactor);
+        this.tiles[x][y] = Array(sizeFactor);
         for (var z = 0; z < sizeFactor; z++) {
-          this.meshes[x][y][z] = [];
+          const specialMesh = sceneHelper.undefinedMesh(
+            { x: x * N, y: y * N, z: z * N },
+            N,
+            1
+          );
+          this.scene.add(specialMesh);
+          this.tiles[x][y][z] = {
+            matrix: this.emptyVoxelMatrix(N),
+            specialMesh: specialMesh,
+            voxelsAreHidden: true
+          };
         }
       }
     }
@@ -127,38 +136,95 @@ class SceneComponent extends Component {
     this.sceneBuilted = true;
   }
 
+  emptyVoxelMatrix(N) {
+    let matrix = new Array(N);
+    for (var x = 0; x < N; x++) {
+      matrix[x] = Array(N);
+      for (var y = 0; y < N; y++) {
+        matrix[x][y] = Array(N);
+        for (var z = 0; z < N; z++) {
+          const voxel = sceneHelper.voxelMesh(x, y, z, null);
+          voxel.material.opacity = 0;
+          matrix[x][y][z] = voxel;
+          this.scene.add(voxel);
+        }
+      }
+    }
+    return matrix;
+  }
+
   componentDidUpdate() {
     if (this.props.artwork !== null && !this.sceneBuilted) {
       this.buildScene();
     }
+    console.log("Update");
 
-    this.updateScene();
+    // this.updateScene();
     this.renderScene();
   }
 
   updateScene() {
     const { positionsToDraw, palette, output } = this.props.artwork;
 
-    // Remove old voxels
-    // this.voxelsInScene.forEach(function(item, index, array) {
-    //   this.scene.remove(item);
-    // }, this);
-    // this.voxelsInScene = [];
-
     // Updates boxes
     for (var i = 0; i < positionsToDraw.length; i++) {
       const { x, y, z } = positionsToDraw[i];
 
-      // Remove previous meshes at the box position
-      const previousMeshes = this.meshes[x][y][z];
-      this.scene.remove(...previousMeshes);
-
-      // Add new meshes
       const box = output[x][y][z];
-      const newMeshes = this.boxMeshes(box, palette.N);
-      this.meshes[x][y][z] = newMeshes;
-      if (newMeshes.length > 0) this.scene.add(...newMeshes);
+      const tile = this.tiles[x][y][z];
+
+      console.log("Box", box);
+
+      // Undefined or Contradiction
+      if (box.matrix === null) {
+        // Make sure voxels are hidden, special mesh is visible
+        if (!tile.voxelsAreHidden) this.hideVoxels(tile, true);
+
+        if (box.uncertainty === 0) {
+          // contradiction
+          tile.specialMesh.material.color = 0xdf2029;
+          tile.specialMesh.material.opacity = 0.8;
+        } else {
+          // undefined
+          tile.specialMesh.material.color = 0x000;
+          tile.specialMesh.material.opacity =
+            0.05 + (1 - box.uncertainty) * 0.6;
+        }
+      } else {
+        // Make sure voxels are visible, special mesh is hidden
+        if (tile.voxelsAreHidden) this.hideVoxels(tile, false);
+
+        // Update colors of voxels
+        for (var x = 0; x < tile.matrix.length; x++) {
+          for (var y = 0; y < tile.matrix[x].length; y++) {
+            for (var z = 0; z < tile.matrix[x][y].length; z++) {
+              const color = box.matrix[x][y][z];
+              tile.matrix[x][y][z].material.color =
+                color === -1 ? 0xfff : color;
+            }
+          }
+        }
+      }
     }
+  }
+
+  /* -------------------------- UPDATE -------------------------- */
+
+  hideVoxels(tile, shouldHide) {
+    // Update boolean
+    tile.voxelsAreHidden = shouldHide;
+
+    // Hide/Show voxels
+    for (var x = 0; x < tile.matrix.length; x++) {
+      for (var y = 0; y < tile.matrix[x].length; y++) {
+        for (var z = 0; z < tile.matrix[x][y].length; z++) {
+          tile.matrix[x][y][z].material.opacity = shouldHide ? 0 : 1;
+        }
+      }
+    }
+
+    // Show/Hide special mesh
+    tile.specialMesh.material.opacity = shouldHide ? 1 : 0;
   }
 
   boxMeshes(box, N) {
@@ -182,6 +248,8 @@ class SceneComponent extends Component {
       return sceneHelper.voxelMeshes(box.voxels, origin);
     }
   }
+
+  /* -------------------------- OTHER -------------------------- */
 
   renderScene() {
     this.renderer.render(this.scene, this.currentCamera);

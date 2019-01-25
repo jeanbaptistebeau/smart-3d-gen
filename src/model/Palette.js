@@ -5,6 +5,7 @@ class Palette {
   // Parameters
   N;
   sizeFactor;
+  allowedContradiction;
   groundMagnetism;
 
   // Positives examples
@@ -18,9 +19,10 @@ class Palette {
     if (arg === undefined || arg === null) {
       this.N = 3;
       this.sizeFactor = 10;
-      this.groundMagnetism = true;
+      this.allowedContradiction = 0.5;
+      this.groundMagnetism = false;
       this.positives = [
-        new Source({ matrix: Models.ground(), allowYRotation: false })
+        new Source({ matrix: Models.basicBuilding(), allowYRotation: false })
       ];
       this.negatives = [];
       return;
@@ -29,6 +31,7 @@ class Palette {
     // Input parameters
     this.N = arg.N;
     this.sizeFactor = arg.sizeFactor;
+    this.allowedContradiction = arg.allowedContradiction;
     this.groundMagnetism = arg.groundMagnetism;
 
     // Positives (copy)

@@ -84,7 +84,10 @@
 }
 
 :local(.scene) {
+  position: relative;
   flex-grow: 1;
+  border: solid 2px #555555;
+  overflow: hidden;
 }
 
 :local(.colorPalette) {

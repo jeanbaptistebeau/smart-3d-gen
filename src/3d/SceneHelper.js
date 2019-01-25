@@ -73,7 +73,9 @@ export var sceneHelper = {
     const geometry = new THREE.BufferGeometry().fromGeometry(
       new THREE.BoxGeometry(UNIT, UNIT, UNIT)
     );
-    const material = new THREE.MeshLambertMaterial({ color: color });
+    const material = new THREE.MeshLambertMaterial({
+      color: color || 0x000000
+    });
     const cube = new THREE.Mesh(geometry, material);
     cube.name = `${x}/${y}/${z}`;
 

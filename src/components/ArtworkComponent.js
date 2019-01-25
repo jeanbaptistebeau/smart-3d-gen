@@ -5,7 +5,7 @@ import * as THREE from "three";
 import { exportOBJ } from "../3d/OBJExporter";
 
 class ArtworkComponent extends Component {
-  allScenes = {};
+  allSceneComponents = {};
 
   render() {
     const { allArtworks, currentIndex } = this.props;
@@ -20,7 +20,7 @@ class ArtworkComponent extends Component {
             className="Scene"
             artwork={artwork}
             ref={sc => {
-              if (sc !== null) this.allScenes[index] = sc.scene;
+              if (sc !== null) this.allSceneComponents[index] = sc;
             }}
             key={index}
             style={{ display: index === currentIndex ? "block" : "none" }}
@@ -29,13 +29,26 @@ class ArtworkComponent extends Component {
         <button
           className="ExportButton"
           onClick={() => {
-            const scene = this.allScenes[this.props.currentIndex];
+            const scene = this.allSceneComponents[this.props.currentIndex]
+              .scene;
             if (scene !== undefined && scene != null) {
               exportOBJ(scene);
             }
           }}
         >
           <i className="fas fa-share-square" />
+        </button>
+
+        <button
+          className="CameraButton"
+          onClick={() => {
+            const sceneComponent = this.allSceneComponents[
+              this.props.currentIndex
+            ];
+            sceneComponent.changeCamera();
+          }}
+        >
+          <i className="fas fa-camera" />
         </button>
       </div>
     );

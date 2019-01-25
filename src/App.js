@@ -127,7 +127,10 @@ class App extends Component {
     this.state.allArtworks.pop();
     this.setState({ currentIndex: null, currentState: "new" });
 
-    this.wfcWorker.postMessage(message.cancel());
+    // Restart web worker
+    this.wfcWorker.terminate();
+    this.wfcWorker = new WebWorker(worker);
+    this.wfcWorker.onmessage = this.handleMessage;
   }
 
   // Finished WFC generation
@@ -158,14 +161,14 @@ var message = {
   start: artwork => ({
     type: "start",
     body: {
-      _N: artwork.palette.N,
-      _sizeFactor: artwork.palette.sizeFactor,
-      _groundMagnetism: artwork.palette.groundMagnetism,
+      N: artwork.palette.N,
+      sizeFactor: artwork.palette.sizeFactor,
+      allowedContradiction: artwork.palette.allowedContradiction,
+      groundMagnetism: artwork.palette.groundMagnetism,
       positives: artwork.palette.positives,
       negatives: artwork.palette.negatives
     }
-  }),
-  cancel: () => ({ type: "cancel" })
+  })
 };
 
 export default App;

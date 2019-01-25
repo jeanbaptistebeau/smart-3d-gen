@@ -46,20 +46,31 @@
   bottom: 0;
 }
 
-.ExportButton {
+.ExportButton,
+.CameraButton {
   color: #333;
   background-color: transparent;
   border: none;
   font-size: 1.5em;
   cursor: pointer;
   position: absolute;
-  left: 0;
   bottom: 0;
   margin: 15px;
 }
 
-.ExportButton:hover {
+.ExportButton:hover,
+.ExportButton:focus,
+.CameraButton:hover,
+.CameraButton:focus {
   outline: none;
+}
+
+.ExportButton {
+  left: 0;
+}
+
+.CameraButton {
+  right: 0;
 }
 
 /*********************** TIMELINE ***********************/
@@ -70,6 +81,7 @@
   display: flex;
   align-items: center;
   padding: 0 10px;
+  overflow: scroll;
 }
 
 .Timeline .versionButton {

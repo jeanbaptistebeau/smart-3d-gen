@@ -99,12 +99,17 @@ class ToolbarComponent extends Component {
             <h3>Allowed Contradictions</h3>
             <input
               type="range"
-              min="1"
+              min="0"
               max="100"
-              defaultValue="50"
               className="slider"
               id="allowedContradictionSlider"
               disabled={this.props.currentState !== "new"}
+              value={this.state.palette.allowedContradiction * 100}
+              onChange={event => {
+                this.state.palette.allowedContradiction =
+                  event.target.value / 100;
+                this.forceUpdate();
+              }}
             />
           </div>
 
